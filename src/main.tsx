@@ -1,0 +1,19 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { RouterProvider } from '@tanstack/react-router'
+import { router } from './app/router'
+import { settingsStore } from './state/settingsStore'
+import { registerSW } from './pwa/registerSW'
+import './index.css'
+
+// Initialize settings (theme, contrast)
+settingsStore.init()
+
+// Register service worker for PWA
+registerSW()
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>,
+)
