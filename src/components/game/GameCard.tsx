@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
-import { Trophy, Users, Hash, TrendingDown, Clock } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { Trophy, Users, Hash, TrendingDown, Clock, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { Game, Player } from '@/data/db'
@@ -11,33 +12,53 @@ interface GameCardProps {
   players: Player[]
   turnCount?: number
   winner?: Player
+  onDelete?: (gameId: string) => void
 }
 
-export function GameCard({ game, players, turnCount = 0, winner }: GameCardProps) {
+export function GameCard({ game, players, turnCount = 0, winner, onDelete }: GameCardProps) {
   const isFinished = game.status === 'FINISHED'
 
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (onDelete && confirm(`Supprimer la partie "${game.title || game.gameName}" ?\n\nCette action est irréversible.`)) {
+      onDelete(game.id)
+    }
+  }
+
   return (
-    <Link to={isFinished ? '/games/$gameId/results' : '/games/$gameId'} params={{ gameId: game.id }}>
-      <Card className="cursor-pointer hover:bg-accent/50 transition-colors touch-manipulation">
-        <CardHeader>
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
-              <CardTitle className="text-lg">
-                {game.title || game.gameName}
-              </CardTitle>
-              {game.title && (
-                <p className="text-sm text-muted-foreground mt-1">{game.gameName}</p>
-              )}
-            </div>
-            {isFinished && (
+    <div className="relative">
+      <Link to={isFinished ? '/games/$gameId/results' : '/games/$gameId'} params={{ gameId: game.id }}>
+        <Card className="cursor-pointer hover:bg-accent/50 transition-colors touch-manipulation">
+          <CardHeader>
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <CardTitle className="text-lg">
+                  {game.title || game.gameName}
+                </CardTitle>
+                {game.title && (
+                  <p className="text-sm text-muted-foreground mt-1">{game.gameName}</p>
+                )}
+              </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                {winner && (
+                {isFinished && winner && (
                   <span className="text-sm font-medium text-foreground">{winner.name}</span>
                 )}
-                <Trophy className="h-5 w-5 text-yellow-500" />
+                {isFinished && (
+                  <Trophy className="h-5 w-5 text-yellow-500" />
+                )}
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                )}
               </div>
-            )}
-          </div>
+            </div>
 
           <CardDescription>
             {/* Players */}
@@ -92,5 +113,6 @@ export function GameCard({ game, players, turnCount = 0, winner }: GameCardProps
         </CardHeader>
       </Card>
     </Link>
+    </div>
   )
 }
