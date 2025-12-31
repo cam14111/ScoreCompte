@@ -6,6 +6,7 @@ import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { ArrowLeft, RotateCw, Trophy } from 'lucide-react'
+import { useAlertDialog } from '@/contexts/AlertContext'
 import type { Player } from '@/data/db'
 
 interface PlayerResult {
@@ -16,6 +17,7 @@ interface PlayerResult {
 
 export function GameResultsPage() {
   const navigate = useNavigate()
+  const { showAlert } = useAlertDialog()
   const { gameId } = useParams({ strict: false }) as { gameId: string }
   const [results, setResults] = useState<PlayerResult[]>([])
   const [gameName, setGameName] = useState('')
@@ -72,8 +74,12 @@ export function GameResultsPage() {
       navigate({ to: '/games/$gameId', params: { gameId: newGame.id } })
     } catch (error) {
       console.error('Error replaying game:', error)
-      alert('Erreur lors de la création de la nouvelle partie')
-    } finally {
+      showAlert({
+        title: 'Erreur',
+        message: 'Une erreur est survenue lors de la création de la nouvelle partie.',
+        type: 'error'
+      })
+    } finally{
       setIsReplaying(false)
     }
   }

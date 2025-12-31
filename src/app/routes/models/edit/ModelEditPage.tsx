@@ -8,10 +8,12 @@ import { Switch } from '@/components/ui/Switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog'
 import { ArrowLeft, Save, Trash2, EyeOff, RotateCcw } from 'lucide-react'
 import type { GameModel } from '@/data/db'
+import { useAlertDialog } from '@/contexts/AlertContext'
 
 export function ModelEditPage() {
   const navigate = useNavigate()
   const { modelId } = useParams({ strict: false }) as { modelId: string }
+  const { showAlert } = useAlertDialog()
   const [model, setModel] = useState<GameModel | null>(null)
   const [name, setName] = useState('')
   const [minPlayers, setMinPlayers] = useState(2)
@@ -72,7 +74,7 @@ export function ModelEditPage() {
       navigate({ to: '/models' })
     } catch (error) {
       console.error('Error updating model:', error)
-      alert('Erreur lors de la mise à jour du modèle')
+      showAlert({ title: 'Erreur', message: 'Erreur lors de la mise à jour du modèle', type: 'error' })
     } finally {
       setIsSubmitting(false)
     }
@@ -86,7 +88,7 @@ export function ModelEditPage() {
       navigate({ to: '/models' })
     } catch (error) {
       console.error('Error deleting model:', error)
-      alert((error as Error).message || 'Erreur lors de la suppression du modèle')
+      showAlert({ title: 'Erreur', message: (error as Error).message || 'Erreur lors de la suppression du modèle', type: 'error' })
     }
   }
 
@@ -98,7 +100,7 @@ export function ModelEditPage() {
       navigate({ to: '/models' })
     } catch (error) {
       console.error('Error hiding model:', error)
-      alert('Erreur lors du masquage du modèle')
+      showAlert({ title: 'Erreur', message: 'Erreur lors du masquage du modèle', type: 'error' })
     }
   }
 
@@ -123,7 +125,7 @@ export function ModelEditPage() {
       }
     } catch (error) {
       console.error('Error restoring model:', error)
-      alert((error as Error).message || 'Erreur lors de la restauration du modèle')
+      showAlert({ title: 'Erreur', message: (error as Error).message || 'Erreur lors de la restauration du modèle', type: 'error' })
     }
   }
 

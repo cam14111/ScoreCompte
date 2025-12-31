@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/Label'
 import { Switch } from '@/components/ui/Switch'
 import { Download, Upload, FileJson, FileSpreadsheet, AlertCircle, CheckCircle } from 'lucide-react'
 import { exportToJSON, downloadJSON, exportToCSV, downloadCSV, importFromJSON, ExportData } from '@/lib/exportImport'
+import { useAlertDialog } from '@/contexts/AlertContext'
 
 export function ImportExportPage() {
+  const { showAlert } = useAlertDialog()
   const [includeInProgress, setIncludeInProgress] = useState(true)
   const [includeFinished, setIncludeFinished] = useState(true)
   const [includePlayers, setIncludePlayers] = useState(true)
@@ -28,7 +30,11 @@ export function ImportExportPage() {
       downloadJSON(data)
     } catch (error) {
       console.error('Export error:', error)
-      alert('Erreur lors de l\'export')
+      showAlert({
+        title: 'Erreur d\'export',
+        message: 'Une erreur est survenue lors de l\'export des données.',
+        type: 'error'
+      })
     } finally {
       setIsExporting(false)
     }
@@ -41,7 +47,11 @@ export function ImportExportPage() {
       downloadCSV(csv)
     } catch (error) {
       console.error('Export CSV error:', error)
-      alert('Erreur lors de l\'export CSV')
+      showAlert({
+        title: 'Erreur d\'export CSV',
+        message: 'Une erreur est survenue lors de l\'export au format CSV.',
+        type: 'error'
+      })
     } finally {
       setIsExporting(false)
     }

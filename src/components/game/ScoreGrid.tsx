@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { cn } from '@/lib/cn'
 import { Trophy, Trash2, Plus } from 'lucide-react'
+import { useConfirm } from '@/hooks/useDialog'
 import type { Player, Turn } from '@/data/db'
 
 interface ScoreGridProps {
@@ -29,6 +31,7 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   const [editingCell, setEditingCell] = useState<{ turnId: string; playerId: string } | null>(null)
   const [inputValue, setInputValue] = useState('')
   const [scoringMode, setScoringMode] = useState<'NORMAL' | 'INVERTED'>('NORMAL')
+  const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirm()
 
   useEffect(() => {
     loadGameData()
@@ -160,7 +163,15 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   }
 
   const handleDeleteTurn = async (turnId: string) => {
-    if (confirm('Supprimer ce tour ?')) {
+    const confirmed = await confirm({
+      title: 'Supprimer le tour',
+      message: 'Êtes-vous sûr de vouloir supprimer ce tour ?',
+      destructive: true,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler'
+    })
+
+    if (confirmed) {
       await gamesRepository.deleteTurn(turnId)
       loadGameData()
     }
@@ -182,8 +193,20 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   const winnerIds = getWinnerIds()
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-auto">
+    <>
+      <ConfirmDialog
+        open={isOpen}
+        onOpenChange={handleCancel}
+        title={options?.title}
+        message={options?.message || ''}
+        confirmText={options?.confirmText}
+        cancelText={options?.cancelText}
+        destructive={options?.destructive}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+      <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-auto">
         <table className="w-full border-collapse">
           <thead className="sticky top-0 bg-card z-10 border-b-2">
             <tr>
@@ -296,7 +319,8 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
           <Plus className="h-5 w-5 mr-2" />
           Ajouter un tour
         </Button>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

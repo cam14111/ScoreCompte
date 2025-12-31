@@ -10,10 +10,12 @@ import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog'
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import type { Player } from '@/data/db'
+import { useAlertDialog } from '@/contexts/AlertContext'
 
 export function PlayerEditPage() {
   const navigate = useNavigate()
   const { playerId } = useParams({ strict: false }) as { playerId: string }
+  const { showAlert } = useAlertDialog()
   const [player, setPlayer] = useState<Player | null>(null)
   const [name, setName] = useState('')
   const [color, setColor] = useState('#3b82f6')
@@ -61,7 +63,7 @@ export function PlayerEditPage() {
       navigate({ to: '/players' })
     } catch (error) {
       console.error('Error updating player:', error)
-      alert('Erreur lors de la mise à jour du joueur')
+      showAlert({ title: 'Erreur', message: 'Erreur lors de la mise à jour du joueur', type: 'error' })
     } finally {
       setIsSubmitting(false)
     }
@@ -75,7 +77,7 @@ export function PlayerEditPage() {
       navigate({ to: '/players' })
     } catch (error) {
       console.error('Error deleting player:', error)
-      alert('Erreur lors de la suppression du joueur')
+      showAlert({ title: 'Erreur', message: 'Erreur lors de la suppression du joueur', type: 'error' })
     }
   }
 

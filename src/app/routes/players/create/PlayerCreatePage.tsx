@@ -8,9 +8,11 @@ import { ColorPicker } from '@/components/players/ColorPicker'
 import { AvatarPicker } from '@/components/players/AvatarPicker'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { ArrowLeft, Save } from 'lucide-react'
+import { useAlertDialog } from '@/contexts/AlertContext'
 
 export function PlayerCreatePage() {
   const navigate = useNavigate()
+  const { showAlert } = useAlertDialog()
   const [name, setName] = useState('')
   const [color, setColor] = useState('#3b82f6')
   const [avatarType, setAvatarType] = useState<'initial' | 'icon' | 'image'>('initial')
@@ -37,7 +39,7 @@ export function PlayerCreatePage() {
       navigate({ to: '/players' })
     } catch (error) {
       console.error('Error creating player:', error)
-      alert('Erreur lors de la création du joueur')
+      showAlert({ title: 'Erreur', message: 'Erreur lors de la création du joueur', type: 'error' })
     } finally {
       setIsSubmitting(false)
     }
