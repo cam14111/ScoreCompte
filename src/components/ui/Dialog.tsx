@@ -23,13 +23,17 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, ...props }, ref) => (
+  ({ className, children, onClick, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
         'relative z-50 w-full max-w-lg rounded-t-xl sm:rounded-xl border bg-background p-6 shadow-lg animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 sm:slide-in-from-bottom-0',
         className
       )}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick?.(e)
+      }}
       {...props}
     >
       {children}

@@ -7,22 +7,23 @@ import { Label } from '@/components/ui/Label'
 import { ColorPicker } from '@/components/players/ColorPicker'
 import { AvatarPicker } from '@/components/players/AvatarPicker'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import type { Player } from '@/data/db'
 import { useAlertDialog } from '@/contexts/AlertContext'
+import { useConfirm } from '@/hooks/useDialog'
 
 export function PlayerEditPage() {
   const navigate = useNavigate()
   const { playerId } = useParams({ strict: false }) as { playerId: string }
   const { showAlert } = useAlertDialog()
+  const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirm()
   const [player, setPlayer] = useState<Player | null>(null)
   const [name, setName] = useState('')
   const [color, setColor] = useState('#3b82f6')
   const [avatarType, setAvatarType] = useState<'initial' | 'icon' | 'image'>('initial')
   const [avatarValue, setAvatarValue] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     const loadPlayer = async () => {
@@ -69,15 +70,25 @@ export function PlayerEditPage() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!playerId) return
+  const handleDeleteClick = async () => {
+    if (!playerId || !player) return
 
-    try {
-      await playersRepository.softDelete(playerId)
-      navigate({ to: '/players' })
-    } catch (error) {
-      console.error('Error deleting player:', error)
-      showAlert({ title: 'Erreur', message: 'Erreur lors de la suppression du joueur', type: 'error' })
+    const confirmed = await confirm({
+      title: 'Supprimer le joueur',
+      message: `Êtes-vous sûr de vouloir supprimer ${player.name} ?\n\nCette action est irréversible.`,
+      destructive: true,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler'
+    })
+
+    if (confirmed) {
+      try {
+        await playersRepository.softDelete(playerId)
+        navigate({ to: '/players' })
+      } catch (error) {
+        console.error('Error deleting player:', error)
+        showAlert({ title: 'Erreur', message: 'Erreur lors de la suppression du joueur', type: 'error' })
+      }
     }
   }
 
@@ -90,8 +101,20 @@ export function PlayerEditPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <div className="mb-6">
+    <>
+      <ConfirmDialog
+        open={isOpen}
+        onOpenChange={handleCancel}
+        title={options?.title}
+        message={options?.message || ''}
+        confirmText={options?.confirmText}
+        cancelText={options?.cancelText}
+        destructive={options?.destructive}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+      <div className="container mx-auto p-4 max-w-2xl">
+        <div className="mb-6">
         <Button
           variant="ghost"
           size="sm"
@@ -150,7 +173,7 @@ export function PlayerEditPage() {
             type="button"
             variant="destructive"
             size="icon"
-            onClick={() => setShowDeleteDialog(true)}
+            onClick={handleDeleteClick}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -172,26 +195,7 @@ export function PlayerEditPage() {
           </Button>
         </div>
       </form>
-
-      {/* Delete confirmation dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Supprimer le joueur ?</DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer {player.name} ? Cette action est irréversible.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              Annuler
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Supprimer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      </div>
+    </>
   )
 }
