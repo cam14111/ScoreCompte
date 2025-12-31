@@ -16,8 +16,9 @@ export function ModelEditPage() {
   const [name, setName] = useState('')
   const [minPlayers, setMinPlayers] = useState(2)
   const [maxPlayers, setMaxPlayers] = useState(6)
-  const [entryMode, setEntryMode] = useState<'ROUND_ALL' | 'TURN_BY_PLAYER'>('ROUND_ALL')
   const [scoringMode, setScoringMode] = useState<'NORMAL' | 'INVERTED'>('NORMAL')
+  const [scoreLimit, setScoreLimit] = useState<number | undefined>()
+  const [turnLimit, setTurnLimit] = useState<number | undefined>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [canDelete, setCanDelete] = useState(true)
@@ -33,8 +34,9 @@ export function ModelEditPage() {
       setName(m.name)
       setMinPlayers(m.minPlayers)
       setMaxPlayers(m.maxPlayers)
-      setEntryMode(m.entryMode)
       setScoringMode(m.scoringMode)
+      setScoreLimit(m.scoreLimit)
+      setTurnLimit(m.turnLimit)
 
       const deletable = await gameModelsRepository.canDelete(modelId)
       setCanDelete(deletable)
@@ -55,8 +57,9 @@ export function ModelEditPage() {
         name: name.trim(),
         minPlayers,
         maxPlayers,
-        entryMode,
-        scoringMode
+        scoringMode,
+        scoreLimit,
+        turnLimit
       })
 
       navigate({ to: '/models' })
@@ -170,25 +173,36 @@ export function ModelEditPage() {
           </div>
         </div>
 
-        {/* Entry mode */}
+        {/* End conditions */}
         <div className="space-y-3">
-          <Label>Mode de saisie</Label>
-          <div className="flex items-center justify-between p-3 border rounded-lg">
-            <div>
-              <p className="font-medium">Tour par joueur</p>
-              <p className="text-sm text-muted-foreground">
-                {entryMode === 'TURN_BY_PLAYER'
-                  ? 'Un joueur à la fois saisit son score'
-                  : 'Tous les joueurs saisissent leurs scores ensemble'}
-              </p>
+          <Label>Conditions de fin de partie (optionnel)</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="scoreLimit">Score max</Label>
+              <Input
+                id="scoreLimit"
+                type="number"
+                min={1}
+                placeholder="Aucune limite"
+                value={scoreLimit || ''}
+                onChange={(e) => setScoreLimit(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
             </div>
-            <Switch
-              checked={entryMode === 'TURN_BY_PLAYER'}
-              onCheckedChange={(checked) =>
-                setEntryMode(checked ? 'TURN_BY_PLAYER' : 'ROUND_ALL')
-              }
-            />
+            <div className="space-y-2">
+              <Label htmlFor="turnLimit">Tours max</Label>
+              <Input
+                id="turnLimit"
+                type="number"
+                min={1}
+                placeholder="Aucune limite"
+                value={turnLimit || ''}
+                onChange={(e) => setTurnLimit(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+            </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Ces limites seront utilisées par défaut lors de la création d'une partie avec ce modèle
+          </p>
         </div>
 
         {/* Actions */}

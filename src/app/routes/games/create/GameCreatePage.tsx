@@ -32,6 +32,8 @@ export function GameCreatePage() {
     if (selectedModel) {
       setGameName(selectedModel.name)
       setScoringMode(selectedModel.scoringMode)
+      setScoreLimit(selectedModel.scoreLimit)
+      setTurnLimit(selectedModel.turnLimit)
     }
   }, [selectedModel])
 
@@ -55,7 +57,6 @@ export function GameCreatePage() {
         gameName: gameName.trim(),
         scoreLimit,
         turnLimit,
-        entryMode: selectedModel?.entryMode || 'ROUND_ALL',
         scoringMode,
         showTurns,
         showIntermediate,

@@ -16,8 +16,9 @@ export const gameModelsRepository = {
     name: string
     minPlayers: number
     maxPlayers: number
-    entryMode: 'ROUND_ALL' | 'TURN_BY_PLAYER'
     scoringMode: 'NORMAL' | 'INVERTED'
+    scoreLimit?: number
+    turnLimit?: number
     rules?: any
   }): Promise<GameModel> {
     const model: GameModel = {

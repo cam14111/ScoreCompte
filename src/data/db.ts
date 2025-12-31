@@ -18,8 +18,9 @@ export interface GameModel {
   name: string
   minPlayers: number
   maxPlayers: number
-  entryMode: 'ROUND_ALL' | 'TURN_BY_PLAYER'
   scoringMode: 'NORMAL' | 'INVERTED'
+  scoreLimit?: number
+  turnLimit?: number
   rules?: any
   createdAt: number
   updatedAt: number
@@ -35,7 +36,6 @@ export interface Game {
   status: 'IN_PROGRESS' | 'FINISHED' | 'ARCHIVED'
   scoreLimit?: number
   turnLimit?: number
-  entryMode: 'ROUND_ALL' | 'TURN_BY_PLAYER'
   scoringMode: 'NORMAL' | 'INVERTED'
   showTurns: boolean
   showIntermediate: boolean
