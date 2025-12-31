@@ -19,8 +19,18 @@ export function Podium({ players }: PodiumProps) {
     top3[2], // 3rd place (right)
   ].filter(Boolean)
 
-  const heights = ['h-24', 'h-32', 'h-20']
   const trophyColors = ['text-yellow-500', 'text-gray-400', 'text-amber-600']
+
+  // Calculer les hauteurs proportionnelles aux scores
+  const scores = top3.map(p => p?.score || 0).filter(s => s > 0)
+  const maxScore = Math.max(...scores, 1) // Éviter division par zéro
+  const minHeight = 80  // 20 * 4 = 80px (h-20)
+  const maxHeight = 160 // 40 * 4 = 160px (h-40)
+
+  const getHeight = (score: number): number => {
+    if (maxScore === 0) return minHeight
+    return Math.round(minHeight + (score / maxScore) * (maxHeight - minHeight))
+  }
 
   return (
     <div className="flex items-end justify-center gap-4 py-8">
@@ -54,9 +64,9 @@ export function Podium({ players }: PodiumProps) {
             <div
               className={cn(
                 'w-20 rounded-t-lg flex items-center justify-center font-bold text-white',
-                heights[originalIndex],
                 originalIndex === 0 ? 'bg-yellow-500' : originalIndex === 1 ? 'bg-gray-400' : 'bg-amber-600'
               )}
+              style={{ height: `${getHeight(item.score)}px` }}
             >
               #{item.rank}
             </div>
