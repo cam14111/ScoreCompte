@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Switch } from '@/components/ui/Switch'
 import { ArrowLeft, Save } from 'lucide-react'
+import { useAlertDialog } from '@/contexts/AlertContext'
 
 export function ModelCreatePage() {
   const navigate = useNavigate()
+  const { showAlert } = useAlertDialog()
   const [name, setName] = useState('')
   const [minPlayers, setMinPlayers] = useState(2)
   const [maxPlayers, setMaxPlayers] = useState(6)
@@ -39,7 +41,7 @@ export function ModelCreatePage() {
       navigate({ to: '/models' })
     } catch (error) {
       console.error('Error creating model:', error)
-      alert('Erreur lors de la création du modèle')
+      showAlert({ title: 'Erreur', message: 'Erreur lors de la création du modèle', type: 'error' })
     } finally {
       setIsSubmitting(false)
     }

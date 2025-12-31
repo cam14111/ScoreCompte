@@ -13,9 +13,11 @@ import { Switch } from '@/components/ui/Switch'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import type { GameModel } from '@/data/db'
+import { useAlertDialog } from '@/contexts/AlertContext'
 
 export function GameCreatePage() {
   const navigate = useNavigate()
+  const { showAlert } = useAlertDialog()
   const models = useLiveQuery(() => gameModelsRepository.getAll(), [])
   const players = useLiveQuery(() => playersRepository.getAll(), [])
 
@@ -90,7 +92,7 @@ export function GameCreatePage() {
       navigate({ to: '/games/$gameId', params: { gameId: game.id } })
     } catch (error) {
       console.error('Error creating game:', error)
-      alert('Erreur lors de la création de la partie')
+      showAlert({ title: 'Erreur', message: 'Erreur lors de la création de la partie', type: 'error' })
     } finally {
       setIsSubmitting(false)
     }

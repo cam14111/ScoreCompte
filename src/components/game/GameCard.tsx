@@ -2,9 +2,11 @@ import { Link } from '@tanstack/react-router'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Trophy, Users, Hash, TrendingDown, Clock, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useConfirm } from '@/hooks/useDialog'
 import type { Game, Player } from '@/data/db'
 
 interface GameCardProps {
@@ -17,18 +19,42 @@ interface GameCardProps {
 
 export function GameCard({ game, players, turnCount = 0, winner, onDelete }: GameCardProps) {
   const isFinished = game.status === 'FINISHED'
+  const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirm()
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (onDelete && confirm(`Supprimer la partie "${game.title || game.gameName}" ?\n\nCette action est irréversible.`)) {
+
+    if (!onDelete) return
+
+    const confirmed = await confirm({
+      title: 'Supprimer la partie',
+      message: `Supprimer la partie "${game.title || game.gameName}" ?\n\nCette action est irréversible.`,
+      destructive: true,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler'
+    })
+
+    if (confirmed) {
       onDelete(game.id)
     }
   }
 
   return (
-    <div className="relative">
-      <Link to={isFinished ? '/games/$gameId/results' : '/games/$gameId'} params={{ gameId: game.id }}>
+    <>
+      <ConfirmDialog
+        open={isOpen}
+        onOpenChange={handleCancel}
+        title={options?.title}
+        message={options?.message || ''}
+        confirmText={options?.confirmText}
+        cancelText={options?.cancelText}
+        destructive={options?.destructive}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+      <div className="relative">
+        <Link to={isFinished ? '/games/$gameId/results' : '/games/$gameId'} params={{ gameId: game.id }}>
         <Card className="cursor-pointer hover:bg-accent/50 transition-colors touch-manipulation">
           <CardHeader>
             <div className="flex items-start justify-between mb-2">
@@ -110,9 +136,10 @@ export function GameCard({ game, players, turnCount = 0, winner, onDelete }: Gam
               </span>
             </div>
           </CardDescription>
-        </CardHeader>
-      </Card>
-    </Link>
-    </div>
+          </CardHeader>
+        </Card>
+      </Link>
+      </div>
+    </>
   )
 }
