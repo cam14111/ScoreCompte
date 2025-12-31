@@ -20,7 +20,7 @@ export function Podium({ players }: PodiumProps) {
   ].filter(Boolean)
 
   // Hauteurs fixes par rang : #1 le plus haut, #2 moyen, #3 le plus bas
-  const heights = ['h-30', 'h-25', 'h-20'] // #1: 120px, #2: 100px, #3: 80px
+  const heights = ['h-36', 'h-28', 'h-20'] // #1: 144px, #2: 112px, #3: 80px
   const trophyColors = ['text-yellow-500', 'text-gray-400', 'text-amber-600']
 
   return (
