@@ -33,6 +33,18 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const handleCancel = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onCancel()
+  }
+
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onConfirm()
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -56,14 +68,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <DialogFooter className="mt-4">
           <Button
             variant="outline"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="flex-1"
           >
             {cancelText}
           </Button>
           <Button
             variant={destructive ? 'destructive' : 'default'}
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="flex-1"
           >
             {confirmText}
