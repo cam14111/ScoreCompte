@@ -105,13 +105,24 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
       nextPlayerId = nextPlayer.playerId
       nextValue = turns[currentTurnIndex].scores[nextPlayerId]
     }
-    // Sinon, si tous les scores sont saisis, notifier et créer le tour suivant
+    // Sinon, si tous les scores sont saisis, vérifier les conditions puis créer le tour suivant
     else if (allScoresEntered) {
-      // Notifier que le tour est complet pour vérifier les conditions de fin
-      if (onTurnComplete) {
-        onTurnComplete()
+      // Recharger d'abord pour avoir les données à jour
+      await loadGameData()
+
+      // Vérifier les conditions de fin AVANT de créer le tour suivant
+      const endCheck = await gamesRepository.checkEndConditions(gameId)
+
+      // Si la partie devrait se terminer, notifier et ne pas créer de nouveau tour
+      if (endCheck.shouldEnd && onTurnComplete) {
+        await onTurnComplete()
+        // Ne pas créer de nouveau tour ni changer le focus
+        setEditingCell(null)
+        setInputValue('')
+        return
       }
 
+      // Sinon, créer le tour suivant
       const nextTurnIndex = turns.length
       const newTurn = await gamesRepository.createTurn(gameId, nextTurnIndex)
       nextTurnId = newTurn.id
