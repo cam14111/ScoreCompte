@@ -159,8 +159,9 @@ export const gamesRepository = {
 
   async setTurnScore(turnId: string, playerId: string, points: number): Promise<void> {
     const existing = await db.turnScores
-      .where(['turnId', 'playerId'])
+      .where('[turnId+playerId]')
       .equals([turnId, playerId])
+      .filter(ts => !ts.deletedAt)
       .first()
 
     if (existing) {

@@ -127,7 +127,7 @@ class ScoreCounterDB extends Dexie {
       games: 'id, status, modelId, startedAt, updatedAt, deletedAt',
       gamePlayers: 'id, gameId, playerId, updatedAt, deletedAt',
       turns: 'id, gameId, turnIndex, updatedAt, deletedAt',
-      turnScores: 'id, turnId, playerId, updatedAt, deletedAt',
+      turnScores: 'id, [turnId+playerId], turnId, playerId, updatedAt, deletedAt',
       settings: 'userId',
       syncOutbox: '++id, table, recordId, createdAt',
       syncState: 'key'
