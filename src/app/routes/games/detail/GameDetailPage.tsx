@@ -67,15 +67,25 @@ export function GameDetailPage() {
     loadGameData()
   }, [gameId, navigate, game])
 
-  const handleFinishGame = async () => {
+  const handleFinishGame = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     if (!gameId) return
+
+    setShowFinishDialog(false)
 
     const winnerId = await gamesRepository.getWinner(gameId)
     await gamesRepository.finishGame(gameId, winnerId)
     navigate({ to: '/games/$gameId/results', params: { gameId } })
   }
 
-  const handleContinuePlaying = () => {
+  const handleContinuePlaying = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     setShowFinishDialog(false)
   }
 
