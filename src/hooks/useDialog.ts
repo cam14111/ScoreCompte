@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 interface DialogState {
   isOpen: boolean
@@ -52,30 +52,37 @@ export function useConfirm() {
   const [state, setState] = useState<{
     isOpen: boolean
     options?: ConfirmOptions
-    resolver?: (value: boolean) => void
   }>({
     isOpen: false,
   })
 
+  const resolverRef = useRef<((value: boolean) => void) | null>(null)
+
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
     return new Promise((resolve) => {
+      resolverRef.current = resolve
       setState({
         isOpen: true,
         options,
-        resolver: resolve,
       })
     })
   }, [])
 
   const handleConfirm = useCallback(() => {
-    state.resolver?.(true)
+    if (resolverRef.current) {
+      resolverRef.current(true)
+      resolverRef.current = null
+    }
     setState({ isOpen: false })
-  }, [state.resolver])
+  }, [])
 
   const handleCancel = useCallback(() => {
-    state.resolver?.(false)
+    if (resolverRef.current) {
+      resolverRef.current(false)
+      resolverRef.current = null
+    }
     setState({ isOpen: false })
-  }, [state.resolver])
+  }, [])
 
   return {
     isOpen: state.isOpen,
