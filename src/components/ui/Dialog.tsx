@@ -11,11 +11,20 @@ interface DialogProps {
 const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
   if (!open) return null
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onOpenChange?.(false)
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      onClick={handleBackdropClick}
+    >
       <div
         className="fixed inset-0 bg-background/80 backdrop-blur-sm"
-        onClick={() => onOpenChange?.(false)}
+        aria-hidden="true"
       />
       {children}
     </div>
@@ -23,17 +32,13 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, onClick, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
         'relative z-50 w-full max-w-lg rounded-t-xl sm:rounded-xl border bg-background p-6 shadow-lg animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 sm:slide-in-from-bottom-0',
         className
       )}
-      onClick={(e) => {
-        e.stopPropagation()
-        onClick?.(e)
-      }}
       {...props}
     >
       {children}
