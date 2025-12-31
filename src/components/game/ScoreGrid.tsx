@@ -75,10 +75,56 @@ export function ScoreGrid({ gameId }: ScoreGridProps) {
     if (!editingCell) return
 
     const points = parseInt(inputValue) || 0
-    await gamesRepository.setTurnScore(editingCell.turnId, editingCell.playerId, points)
-    setEditingCell(null)
-    setInputValue('')
-    loadGameData()
+    const currentTurnId = editingCell.turnId
+    const currentPlayerId = editingCell.playerId
+
+    // Trouver l'index du tour et du joueur actuels AVANT la sauvegarde
+    const currentTurnIndex = turns.findIndex(t => t.turn.id === currentTurnId)
+    const currentPlayerIndex = players.findIndex(p => p.playerId === currentPlayerId)
+
+    if (currentTurnIndex === -1 || currentPlayerIndex === -1) {
+      return
+    }
+
+    // Sauvegarder le score
+    await gamesRepository.setTurnScore(currentTurnId, currentPlayerId, points)
+
+    // Vérifier si tous les scores du tour actuel sont maintenant saisis
+    const currentTurnScores = await gamesRepository.getTurnScores(currentTurnId)
+    const allScoresEntered = currentTurnScores.length === players.length
+
+    let nextTurnId: string
+    let nextPlayerId: string
+    let nextValue: number | undefined
+
+    // S'il y a un joueur suivant dans le même tour
+    if (currentPlayerIndex < players.length - 1) {
+      const nextPlayer = players[currentPlayerIndex + 1]
+      nextTurnId = currentTurnId
+      nextPlayerId = nextPlayer.playerId
+      nextValue = turns[currentTurnIndex].scores[nextPlayerId]
+    }
+    // Sinon, si tous les scores sont saisis, créer le tour suivant et passer au premier joueur
+    else if (allScoresEntered) {
+      const nextTurnIndex = turns.length
+      const newTurn = await gamesRepository.createTurn(gameId, nextTurnIndex)
+      nextTurnId = newTurn.id
+      nextPlayerId = players[0].playerId
+      nextValue = undefined
+    }
+    // Sinon, rester sur le dernier joueur (tour incomplet)
+    else {
+      nextTurnId = currentTurnId
+      nextPlayerId = players[0].playerId
+      nextValue = turns[currentTurnIndex].scores[nextPlayerId]
+    }
+
+    // Recharger les données pour afficher les changements
+    await loadGameData()
+
+    // Mettre le focus sur la cellule suivante
+    setEditingCell({ turnId: nextTurnId, playerId: nextPlayerId })
+    setInputValue(nextValue !== undefined ? String(nextValue) : '')
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
