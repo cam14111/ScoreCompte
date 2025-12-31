@@ -8,6 +8,7 @@ import type { Player, Turn } from '@/data/db'
 
 interface ScoreGridProps {
   gameId: string
+  onTurnComplete?: () => void
 }
 
 interface PlayerColumn {
@@ -21,7 +22,7 @@ interface TurnRow {
   scores: Record<string, number>
 }
 
-export function ScoreGrid({ gameId }: ScoreGridProps) {
+export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   const [players, setPlayers] = useState<PlayerColumn[]>([])
   const [turns, setTurns] = useState<TurnRow[]>([])
   const [totals, setTotals] = useState<Record<string, number>>({})
@@ -104,8 +105,13 @@ export function ScoreGrid({ gameId }: ScoreGridProps) {
       nextPlayerId = nextPlayer.playerId
       nextValue = turns[currentTurnIndex].scores[nextPlayerId]
     }
-    // Sinon, si tous les scores sont saisis, créer le tour suivant et passer au premier joueur
+    // Sinon, si tous les scores sont saisis, notifier et créer le tour suivant
     else if (allScoresEntered) {
+      // Notifier que le tour est complet pour vérifier les conditions de fin
+      if (onTurnComplete) {
+        onTurnComplete()
+      }
+
       const nextTurnIndex = turns.length
       const newTurn = await gamesRepository.createTurn(gameId, nextTurnIndex)
       nextTurnId = newTurn.id
