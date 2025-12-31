@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { gameModelsRepository } from '@/data/repositories/gameModelsRepository'
 import { playersRepository } from '@/data/repositories/playersRepository'
@@ -29,11 +31,19 @@ export function GameCreatePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
+    // Générer le titre automatiquement
+    const now = new Date()
+    const dateTimeStr = format(now, 'EEEE d MMMM yyyy HH:mm', { locale: fr })
+    const capitalizedDateTime = dateTimeStr.charAt(0).toUpperCase() + dateTimeStr.slice(1)
+
     if (selectedModel) {
       setGameName(selectedModel.name)
       setScoringMode(selectedModel.scoringMode)
       setScoreLimit(selectedModel.scoreLimit)
       setTurnLimit(selectedModel.turnLimit)
+      setTitle(`${selectedModel.name} ${capitalizedDateTime}`)
+    } else {
+      setTitle(`Partie ${capitalizedDateTime}`)
     }
   }, [selectedModel])
 
