@@ -80,8 +80,14 @@ export function ModelEditPage() {
     }
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     if (!modelId) return
+
+    setShowDeleteDialog(false)
 
     try {
       await gameModelsRepository.softDelete(modelId)
@@ -104,12 +110,17 @@ export function ModelEditPage() {
     }
   }
 
-  const handleRestore = async () => {
+  const handleRestore = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     if (!modelId) return
+
+    setShowRestoreDialog(false)
 
     try {
       await gameModelsRepository.restore(modelId)
-      setShowRestoreDialog(false)
       // Reload model to get restored values
       const m = await gameModelsRepository.getById(modelId)
       if (m) {
