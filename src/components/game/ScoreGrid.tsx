@@ -42,7 +42,14 @@ export function ScoreGrid({ gameId }: ScoreGridProps) {
     const gamePlayers = await gamesRepository.getGamePlayers(gameId)
     setPlayers(gamePlayers)
 
-    const gameTurns = await gamesRepository.getTurns(gameId)
+    let gameTurns = await gamesRepository.getTurns(gameId)
+
+    // Créer automatiquement le premier tour si aucun tour n'existe
+    if (gameTurns.length === 0) {
+      await gamesRepository.createTurn(gameId, 0)
+      gameTurns = await gamesRepository.getTurns(gameId)
+    }
+
     const turnsWithScores = await Promise.all(
       gameTurns.map(async (turn) => {
         const scores = await gamesRepository.getTurnScores(turn.id)
