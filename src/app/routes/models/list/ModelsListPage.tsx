@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { gameModelsRepository } from '@/data/repositories/gameModelsRepository'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Plus, Users, TrendingDown, TrendingUp, RotateCw, User } from 'lucide-react'
+import { Plus, Users, TrendingDown, TrendingUp, Trophy, Hash } from 'lucide-react'
 
 export function ModelsListPage() {
   const models = useLiveQuery(() => gameModelsRepository.getAll(), [])
@@ -71,19 +71,18 @@ export function ModelsListPage() {
                           </>
                         )}
                       </span>
-                      <span className="flex items-center gap-1">
-                        {model.entryMode === 'TURN_BY_PLAYER' ? (
-                          <>
-                            <User className="h-3.5 w-3.5" />
-                            Tour par joueur
-                          </>
-                        ) : (
-                          <>
-                            <RotateCw className="h-3.5 w-3.5" />
-                            Tous les joueurs
-                          </>
-                        )}
-                      </span>
+                      {model.scoreLimit && (
+                        <span className="flex items-center gap-1">
+                          <Trophy className="h-3.5 w-3.5" />
+                          {model.scoreLimit} pts max
+                        </span>
+                      )}
+                      {model.turnLimit && (
+                        <span className="flex items-center gap-1">
+                          <Hash className="h-3.5 w-3.5" />
+                          {model.turnLimit} tours max
+                        </span>
+                      )}
                     </div>
                   </CardDescription>
                 </CardHeader>

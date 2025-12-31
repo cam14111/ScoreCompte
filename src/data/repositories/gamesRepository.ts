@@ -20,7 +20,6 @@ export const gamesRepository = {
     gameName: string
     scoreLimit?: number
     turnLimit?: number
-    entryMode: 'ROUND_ALL' | 'TURN_BY_PLAYER'
     scoringMode: 'NORMAL' | 'INVERTED'
     showTurns: boolean
     showIntermediate: boolean
@@ -34,7 +33,6 @@ export const gamesRepository = {
       status: 'IN_PROGRESS',
       scoreLimit: data.scoreLimit,
       turnLimit: data.turnLimit,
-      entryMode: data.entryMode,
       scoringMode: data.scoringMode,
       showTurns: data.showTurns,
       showIntermediate: data.showIntermediate,
@@ -264,7 +262,6 @@ export const gamesRepository = {
       gameName: originalGame.gameName,
       scoreLimit: originalGame.scoreLimit,
       turnLimit: originalGame.turnLimit,
-      entryMode: originalGame.entryMode,
       scoringMode: originalGame.scoringMode,
       showTurns: originalGame.showTurns,
       showIntermediate: originalGame.showIntermediate,
