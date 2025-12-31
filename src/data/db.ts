@@ -21,7 +21,12 @@ export interface GameModel {
   scoringMode: 'NORMAL' | 'INVERTED'
   scoreLimit?: number
   turnLimit?: number
+  showTurns: boolean
+  showIntermediate: boolean
   rules?: any
+  isPredefined?: boolean
+  isHidden?: boolean
+  predefinedId?: string
   createdAt: number
   updatedAt: number
   deletedAt?: number
@@ -131,6 +136,11 @@ class ScoreCounterDB extends Dexie {
       settings: 'userId',
       syncOutbox: '++id, table, recordId, createdAt',
       syncState: 'key'
+    })
+
+    // Version 2: Add isPredefined and isHidden indexes to gameModels
+    this.version(2).stores({
+      gameModels: 'id, name, isPredefined, isHidden, updatedAt, deletedAt'
     })
   }
 }
