@@ -4,10 +4,14 @@ import { RouterProvider } from '@tanstack/react-router'
 import { router } from './app/router'
 import { settingsStore } from './state/settingsStore'
 import { registerSW } from './pwa/registerSW'
+import { initializePredefinedModels } from './data/initialization'
 import './index.css'
 
 // Initialize settings (theme, contrast)
 settingsStore.init()
+
+// Initialize predefined game models
+initializePredefinedModels()
 
 // Register service worker for PWA
 registerSW()

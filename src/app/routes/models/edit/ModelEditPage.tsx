@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Switch } from '@/components/ui/Switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog'
-import { ArrowLeft, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, EyeOff, RotateCcw } from 'lucide-react'
 import type { GameModel } from '@/data/db'
 
 export function ModelEditPage() {
@@ -19,8 +19,11 @@ export function ModelEditPage() {
   const [scoringMode, setScoringMode] = useState<'NORMAL' | 'INVERTED'>('NORMAL')
   const [scoreLimit, setScoreLimit] = useState<number | undefined>()
   const [turnLimit, setTurnLimit] = useState<number | undefined>()
+  const [showTurns, setShowTurns] = useState(true)
+  const [showIntermediate, setShowIntermediate] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false)
   const [canDelete, setCanDelete] = useState(true)
 
   useEffect(() => {
@@ -37,6 +40,8 @@ export function ModelEditPage() {
       setScoringMode(m.scoringMode)
       setScoreLimit(m.scoreLimit)
       setTurnLimit(m.turnLimit)
+      setShowTurns(m.showTurns ?? true)
+      setShowIntermediate(m.showIntermediate ?? true)
 
       const deletable = await gameModelsRepository.canDelete(modelId)
       setCanDelete(deletable)
@@ -59,7 +64,9 @@ export function ModelEditPage() {
         maxPlayers,
         scoringMode,
         scoreLimit,
-        turnLimit
+        turnLimit,
+        showTurns,
+        showIntermediate
       })
 
       navigate({ to: '/models' })
@@ -79,7 +86,44 @@ export function ModelEditPage() {
       navigate({ to: '/models' })
     } catch (error) {
       console.error('Error deleting model:', error)
-      alert('Erreur lors de la suppression du modèle')
+      alert((error as Error).message || 'Erreur lors de la suppression du modèle')
+    }
+  }
+
+  const handleHide = async () => {
+    if (!modelId) return
+
+    try {
+      await gameModelsRepository.hide(modelId)
+      navigate({ to: '/models' })
+    } catch (error) {
+      console.error('Error hiding model:', error)
+      alert('Erreur lors du masquage du modèle')
+    }
+  }
+
+  const handleRestore = async () => {
+    if (!modelId) return
+
+    try {
+      await gameModelsRepository.restore(modelId)
+      setShowRestoreDialog(false)
+      // Reload model to get restored values
+      const m = await gameModelsRepository.getById(modelId)
+      if (m) {
+        setModel(m)
+        setName(m.name)
+        setMinPlayers(m.minPlayers)
+        setMaxPlayers(m.maxPlayers)
+        setScoringMode(m.scoringMode)
+        setScoreLimit(m.scoreLimit)
+        setTurnLimit(m.turnLimit)
+        setShowTurns(m.showTurns ?? true)
+        setShowIntermediate(m.showIntermediate ?? true)
+      }
+    } catch (error) {
+      console.error('Error restoring model:', error)
+      alert((error as Error).message || 'Erreur lors de la restauration du modèle')
     }
   }
 
@@ -205,18 +249,80 @@ export function ModelEditPage() {
           </p>
         </div>
 
+        {/* Display options */}
+        <div className="space-y-3">
+          <Label>Options d'affichage</Label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <p className="font-medium">Afficher les tours</p>
+                <p className="text-sm text-muted-foreground">
+                  Afficher le numéro de tour dans le tableau des scores
+                </p>
+              </div>
+              <Switch
+                checked={showTurns}
+                onCheckedChange={setShowTurns}
+              />
+            </div>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <p className="font-medium">Afficher les totaux intermédiaires</p>
+                <p className="text-sm text-muted-foreground">
+                  Afficher le total cumulé après chaque tour
+                </p>
+              </div>
+              <Switch
+                checked={showIntermediate}
+                onCheckedChange={setShowIntermediate}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Predefined model restore */}
+        {model.isPredefined && (
+          <div className="p-4 border rounded-lg bg-muted/50">
+            <p className="text-sm font-medium mb-2">Modèle prédéfini</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Ce modèle fait partie des modèles prédéfinis. Vous pouvez le modifier, mais vous pouvez aussi restaurer les paramètres d'origine.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRestoreDialog(true)}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Restaurer les paramètres d'origine
+            </Button>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3 pt-4">
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={!canDelete}
-            title={!canDelete ? 'Impossible de supprimer un modèle utilisé dans une partie en cours' : ''}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {model.isPredefined ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleHide}
+              title="Masquer ce modèle de la liste"
+            >
+              <EyeOff className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={!canDelete}
+              title={!canDelete ? 'Impossible de supprimer un modèle utilisé dans une partie en cours' : ''}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -251,6 +357,26 @@ export function ModelEditPage() {
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
               Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Restore confirmation dialog */}
+      <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Restaurer le modèle ?</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir restaurer {model.name} avec ses paramètres d'origine ? Toutes les modifications seront perdues.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRestoreDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleRestore}>
+              Restaurer
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -15,6 +15,8 @@ export function ModelCreatePage() {
   const [scoringMode, setScoringMode] = useState<'NORMAL' | 'INVERTED'>('NORMAL')
   const [scoreLimit, setScoreLimit] = useState<number | undefined>()
   const [turnLimit, setTurnLimit] = useState<number | undefined>()
+  const [showTurns, setShowTurns] = useState(true)
+  const [showIntermediate, setShowIntermediate] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +31,9 @@ export function ModelCreatePage() {
         maxPlayers,
         scoringMode,
         scoreLimit,
-        turnLimit
+        turnLimit,
+        showTurns,
+        showIntermediate
       })
 
       navigate({ to: '/models' })
@@ -154,6 +158,37 @@ export function ModelCreatePage() {
           <p className="text-xs text-muted-foreground">
             Ces limites seront utilisées par défaut lors de la création d'une partie avec ce modèle
           </p>
+        </div>
+
+        {/* Display options */}
+        <div className="space-y-3">
+          <Label>Options d'affichage</Label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <p className="font-medium">Afficher les tours</p>
+                <p className="text-sm text-muted-foreground">
+                  Afficher le numéro de tour dans le tableau des scores
+                </p>
+              </div>
+              <Switch
+                checked={showTurns}
+                onCheckedChange={setShowTurns}
+              />
+            </div>
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div>
+                <p className="font-medium">Afficher les totaux intermédiaires</p>
+                <p className="text-sm text-muted-foreground">
+                  Afficher le total cumulé après chaque tour
+                </p>
+              </div>
+              <Switch
+                checked={showIntermediate}
+                onCheckedChange={setShowIntermediate}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Submit */}
