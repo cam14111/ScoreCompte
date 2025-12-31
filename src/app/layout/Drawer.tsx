@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Home, Trophy, Users, FileText, Settings, Download, Cloud, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { Button } from '@/components/ui/Button'
+import packageJson from '../../../package.json'
 
 interface DrawerProps {
   open: boolean
@@ -77,7 +78,7 @@ export function Drawer({ open, onOpenChange }: DrawerProps) {
           {/* Footer */}
           <div className="border-t p-4 safe-bottom">
             <p className="text-xs text-muted-foreground text-center">
-              Score Counter v1.0.0
+              Score Counter v{packageJson.version}
             </p>
           </div>
         </div>
