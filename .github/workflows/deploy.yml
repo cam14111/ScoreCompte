@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/score-counter-pwa-T9LuA
   workflow_dispatch:
 
 permissions:
