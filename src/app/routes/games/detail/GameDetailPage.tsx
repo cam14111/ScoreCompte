@@ -20,6 +20,7 @@ export function GameDetailPage() {
   const [gameData, setGameData] = useState<GameWithData | null>(null)
   const [showFinishDialog, setShowFinishDialog] = useState(false)
   const [finishReason, setFinishReason] = useState<string>('')
+  const [isManualFinish, setIsManualFinish] = useState(false)
 
   const game = useLiveQuery(
     () => gamesRepository.getById(gameId),
@@ -58,6 +59,7 @@ export function GameDetailPage() {
         } else if (endCheck.reason === 'turn_limit') {
           setFinishReason('Le nombre de tours limite a été atteint !')
         }
+        setIsManualFinish(false)
         setShowFinishDialog(true)
       }
     }
@@ -86,8 +88,15 @@ export function GameDetailPage() {
       } else if (endCheck.reason === 'turn_limit') {
         setFinishReason('Le nombre de tours limite a été atteint !')
       }
+      setIsManualFinish(false)
       setShowFinishDialog(true)
     }
+  }
+
+  const handleManualFinish = () => {
+    setFinishReason('Voulez-vous vraiment terminer cette partie maintenant ?')
+    setIsManualFinish(true)
+    setShowFinishDialog(true)
   }
 
   if (!gameData) {
@@ -105,15 +114,24 @@ export function GameDetailPage() {
       {/* Header */}
       <div className="border-b bg-card shadow-sm safe-top">
         <div className="container mx-auto p-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate({ to: '/games' })}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Retour
-          </Button>
+          <div className="flex items-center justify-between mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: '/games' })}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Retour
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualFinish}
+            >
+              <Trophy className="h-4 w-4 mr-1" />
+              Terminer
+            </Button>
+          </div>
           <h1 className="text-xl font-bold">
             {currentGame.title || currentGame.gameName}
           </h1>
@@ -142,7 +160,7 @@ export function GameDetailPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={handleContinuePlaying}>
-              Continuer et ignorer
+              {isManualFinish ? 'Annuler' : 'Continuer et ignorer'}
             </Button>
             <Button onClick={handleFinishGame}>
               Terminer la partie

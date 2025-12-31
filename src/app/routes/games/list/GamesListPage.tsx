@@ -19,6 +19,10 @@ export function GamesListPage() {
   const [gamesWithData, setGamesWithData] = useState<GameWithData[]>([])
   const [filter, setFilter] = useState<'all' | 'in_progress' | 'finished'>('all')
 
+  const handleDeleteGame = async (gameId: string) => {
+    await gamesRepository.softDelete(gameId)
+  }
+
   useEffect(() => {
     if (!games) return
 
@@ -132,6 +136,7 @@ export function GamesListPage() {
               players={players}
               turnCount={turnCount}
               winner={winner}
+              onDelete={handleDeleteGame}
             />
           ))}
         </div>
