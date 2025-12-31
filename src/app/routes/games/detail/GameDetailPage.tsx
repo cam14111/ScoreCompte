@@ -77,6 +77,19 @@ export function GameDetailPage() {
     setShowFinishDialog(false)
   }
 
+  const handleTurnComplete = async () => {
+    // Vérifier les conditions de fin après chaque tour complété
+    const endCheck = await gamesRepository.checkEndConditions(gameId)
+    if (endCheck.shouldEnd) {
+      if (endCheck.reason === 'score_limit') {
+        setFinishReason('Le score limite a été atteint !')
+      } else if (endCheck.reason === 'turn_limit') {
+        setFinishReason('Le nombre de tours limite a été atteint !')
+      }
+      setShowFinishDialog(true)
+    }
+  }
+
   if (!gameData) {
     return (
       <div className="container mx-auto p-4">
@@ -112,7 +125,7 @@ export function GameDetailPage() {
 
       {/* Score Grid */}
       <div className="flex-1 overflow-hidden">
-        <ScoreGrid gameId={gameId} />
+        <ScoreGrid gameId={gameId} onTurnComplete={handleTurnComplete} />
       </div>
 
       {/* Finish dialog */}
