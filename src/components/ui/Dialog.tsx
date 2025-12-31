@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
     <div
       ref={ref}
       className={cn(
-        'relative z-50 w-full max-w-lg rounded-t-xl sm:rounded-xl border bg-background p-6 shadow-lg animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 sm:slide-in-from-bottom-0',
+        'relative z-50 w-full max-w-lg rounded-t-xl sm:rounded-xl border bg-background p-6 shadow-lg',
         className
       )}
       {...props}
@@ -79,9 +79,10 @@ const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttri
 DialogDescription.displayName = 'DialogDescription'
 
 const DialogClose = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
-  ({ className, ...props }, ref) => (
+  ({ className, type = 'button', ...props }, ref) => (
     <button
       ref={ref}
+      type={type}
       className={cn(
         'absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none',
         className
