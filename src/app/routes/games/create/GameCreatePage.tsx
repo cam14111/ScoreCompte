@@ -38,16 +38,30 @@ export function GameCreatePage() {
   }, [selectedModel])
 
   const togglePlayer = (playerId: string) => {
-    setSelectedPlayerIds(prev =>
-      prev.includes(playerId)
-        ? prev.filter(id => id !== playerId)
-        : [...prev, playerId]
-    )
+    setSelectedPlayerIds(prev => {
+      if (prev.includes(playerId)) {
+        // Désélection toujours possible
+        return prev.filter(id => id !== playerId)
+      } else {
+        // Vérifier le nombre max de joueurs du modèle
+        const maxAllowed = selectedModel?.maxPlayers
+        if (maxAllowed && prev.length >= maxAllowed) {
+          return prev // Ne pas ajouter si on a atteint la limite
+        }
+        return [...prev, playerId]
+      }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!gameName.trim() || selectedPlayerIds.length < 2) return
+
+    // Validation du nombre de joueurs
+    const minRequired = selectedModel?.minPlayers || 2
+    const maxAllowed = selectedModel?.maxPlayers
+
+    if (!gameName.trim() || selectedPlayerIds.length < minRequired) return
+    if (maxAllowed && selectedPlayerIds.length > maxAllowed) return
 
     setIsSubmitting(true)
     try {
@@ -194,7 +208,11 @@ export function GameCreatePage() {
 
         {/* Player selection */}
         <div className="space-y-3">
-          <Label>Joueurs * (min. 2)</Label>
+          <Label>
+            Joueurs * {selectedModel
+              ? `(${selectedModel.minPlayers} à ${selectedModel.maxPlayers})`
+              : '(min. 2)'}
+          </Label>
           {players.length === 0 ? (
             <div className="text-center p-8 border rounded-lg border-dashed">
               <p className="text-sm text-muted-foreground mb-3">Aucun joueur</p>
@@ -209,30 +227,38 @@ export function GameCreatePage() {
             </div>
           ) : (
             <div className="grid gap-2">
-              {players.map(player => (
-                <button
-                  key={player.id}
-                  type="button"
-                  className={`flex items-center gap-3 p-3 border rounded-lg transition-colors touch-manipulation ${
-                    selectedPlayerIds.includes(player.id)
-                      ? 'bg-primary/10 border-primary'
-                      : 'hover:bg-accent'
-                  }`}
-                  onClick={() => togglePlayer(player.id)}
-                >
-                  <PlayerAvatar
-                    type={player.avatarType}
-                    value={player.avatarValue}
-                    color={player.color}
-                    name={player.name}
-                    size="sm"
-                  />
-                  <span className="flex-1 text-left font-medium">{player.name}</span>
-                  {selectedPlayerIds.includes(player.id) && (
-                    <X className="h-4 w-4 text-primary" />
-                  )}
-                </button>
-              ))}
+              {players.map(player => {
+                const isSelected = selectedPlayerIds.includes(player.id)
+                const maxReached = !!(selectedModel?.maxPlayers && selectedPlayerIds.length >= selectedModel.maxPlayers && !isSelected)
+
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    disabled={maxReached}
+                    className={`flex items-center gap-3 p-3 border rounded-lg transition-colors touch-manipulation ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary'
+                        : maxReached
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:bg-accent'
+                    }`}
+                    onClick={() => togglePlayer(player.id)}
+                  >
+                    <PlayerAvatar
+                      type={player.avatarType}
+                      value={player.avatarValue}
+                      color={player.color}
+                      name={player.name}
+                      size="sm"
+                    />
+                    <span className="flex-1 text-left font-medium">{player.name}</span>
+                    {isSelected && (
+                      <X className="h-4 w-4 text-primary" />
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )}
           <p className="text-xs text-muted-foreground">
@@ -252,7 +278,12 @@ export function GameCreatePage() {
           </Button>
           <Button
             type="submit"
-            disabled={!gameName.trim() || selectedPlayerIds.length < 2 || isSubmitting}
+            disabled={
+              !gameName.trim() ||
+              selectedPlayerIds.length < (selectedModel?.minPlayers || 2) ||
+              (selectedModel?.maxPlayers && selectedPlayerIds.length > selectedModel.maxPlayers) ||
+              isSubmitting
+            }
             className="flex-1"
           >
             {isSubmitting ? 'Création...' : 'Démarrer la partie'}
