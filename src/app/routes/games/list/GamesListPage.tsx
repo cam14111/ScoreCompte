@@ -11,6 +11,7 @@ interface GameWithData {
   game: Game
   players: Player[]
   turnCount: number
+  winner?: Player
 }
 
 export function GamesListPage() {
@@ -26,10 +27,19 @@ export function GamesListPage() {
         games.map(async (game) => {
           const gamePlayers = await gamesRepository.getGamePlayers(game.id)
           const turns = await gamesRepository.getTurns(game.id)
+
+          // Récupérer le joueur vainqueur si la partie est terminée
+          let winner: Player | undefined
+          if (game.status === 'FINISHED' && game.winnerPlayerId) {
+            const winnerData = gamePlayers.find(gp => gp.playerId === game.winnerPlayerId)
+            winner = winnerData?.player
+          }
+
           return {
             game,
             players: gamePlayers.map(gp => gp.player),
-            turnCount: turns.length
+            turnCount: turns.length,
+            winner
           }
         })
       )
@@ -115,12 +125,13 @@ export function GamesListPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredGames.map(({ game, players, turnCount }) => (
+          {filteredGames.map(({ game, players, turnCount, winner }) => (
             <GameCard
               key={game.id}
               game={game}
               players={players}
               turnCount={turnCount}
+              winner={winner}
             />
           ))}
         </div>

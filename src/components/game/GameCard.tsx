@@ -10,9 +10,10 @@ interface GameCardProps {
   game: Game
   players: Player[]
   turnCount?: number
+  winner?: Player
 }
 
-export function GameCard({ game, players, turnCount = 0 }: GameCardProps) {
+export function GameCard({ game, players, turnCount = 0, winner }: GameCardProps) {
   const isFinished = game.status === 'FINISHED'
 
   return (
@@ -29,7 +30,12 @@ export function GameCard({ game, players, turnCount = 0 }: GameCardProps) {
               )}
             </div>
             {isFinished && (
-              <Trophy className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {winner && (
+                  <span className="text-sm font-medium text-foreground">{winner.name}</span>
+                )}
+                <Trophy className="h-5 w-5 text-yellow-500" />
+              </div>
             )}
           </div>
 
