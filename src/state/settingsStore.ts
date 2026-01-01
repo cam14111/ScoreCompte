@@ -1,4 +1,4 @@
-import { db, type Settings, now } from '@/data/db'
+import type { Settings } from '@/data/db'
 
 const DEFAULT_SETTINGS: Settings = {
   userId: 'local',
@@ -6,78 +6,26 @@ const DEFAULT_SETTINGS: Settings = {
   contrast: 'default',
   showTurns: true,
   showIntermediate: true,
-  updatedAt: now()
+  updatedAt: Date.now()
 }
 
 class SettingsStore {
-  private listeners: Set<() => void> = new Set()
-  private cachedSettings: Settings | null = null
-
-  async get(): Promise<Settings> {
-    if (this.cachedSettings) {
-      return this.cachedSettings
-    }
-
-    let settings = await db.settings.get('local')
-
-    if (!settings) {
-      settings = { ...DEFAULT_SETTINGS }
-      await db.settings.put(settings)
-    }
-
-    this.cachedSettings = settings
-    return settings
+  get(): Settings {
+    return { ...DEFAULT_SETTINGS }
   }
 
-  async update(partial: Partial<Omit<Settings, 'userId'>>): Promise<void> {
-    const current = await this.get()
-    const updated: Settings = {
-      ...current,
-      ...partial,
-      updatedAt: now()
-    }
-
-    await db.settings.put(updated)
-    this.cachedSettings = updated
-    this.notifyListeners()
-    this.applyTheme(updated)
-  }
-
-  subscribe(listener: () => void): () => void {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
-  }
-
-  private notifyListeners() {
-    this.listeners.forEach(listener => listener())
-  }
-
-  private applyTheme(settings: Settings) {
+  private applyTheme() {
     const root = document.documentElement
 
-    // Apply theme
-    if (settings.theme === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
-    } else {
-      root.setAttribute('data-theme', settings.theme)
-    }
+    // Apply default dark theme
+    root.setAttribute('data-theme', 'dark')
 
-    // Apply contrast
-    root.setAttribute('data-contrast', settings.contrast)
+    // Apply default contrast
+    root.setAttribute('data-contrast', 'default')
   }
 
-  async init() {
-    const settings = await this.get()
-    this.applyTheme(settings)
-
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async () => {
-      const current = await this.get()
-      if (current.theme === 'system') {
-        this.applyTheme(current)
-      }
-    })
+  init() {
+    this.applyTheme()
   }
 }
 
