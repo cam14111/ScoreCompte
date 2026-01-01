@@ -11,7 +11,6 @@ import { PlayerEditPage } from './routes/players/edit/PlayerEditPage'
 import { ModelsListPage } from './routes/models/list/ModelsListPage'
 import { ModelCreatePage } from './routes/models/create/ModelCreatePage'
 import { ModelEditPage } from './routes/models/edit/ModelEditPage'
-import { SettingsPage } from './routes/settings/SettingsPage'
 import { ImportExportPage } from './routes/import-export/ImportExportPage'
 import { BackupPage } from './routes/backup/BackupPage'
 
@@ -85,12 +84,6 @@ const modelEditRoute = createRoute({
   component: ModelEditPage,
 })
 
-const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/settings',
-  component: SettingsPage,
-})
-
 const importExportRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/import-export',
@@ -115,7 +108,6 @@ const routeTree = rootRoute.addChildren([
   modelsRoute,
   modelCreateRoute,
   modelEditRoute,
-  settingsRoute,
   importExportRoute,
   backupRoute,
 ])

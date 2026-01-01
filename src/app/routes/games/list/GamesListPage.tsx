@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { GameCard } from '@/components/game/GameCard'
 import { Button } from '@/components/ui/Button'
-import { Plus } from 'lucide-react'
 import type { Game, Player } from '@/data/db'
 
 interface GameWithData {
@@ -72,19 +70,11 @@ export function GamesListPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Parties</h1>
-          <p className="text-sm text-muted-foreground">
-            {inProgressCount} en cours · {finishedCount} terminée{finishedCount > 1 ? 's' : ''}
-          </p>
-        </div>
-        <Link to="/games/new">
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Nouvelle
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold">Parties</h1>
+        <p className="text-sm text-muted-foreground">
+          {inProgressCount} en cours · {finishedCount} terminée{finishedCount > 1 ? 's' : ''}
+        </p>
       </div>
 
       {/* Filters */}
@@ -115,17 +105,9 @@ export function GamesListPage() {
       {/* Games list */}
       {filteredGames.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground">
             {filter === 'all' ? 'Aucune partie' : `Aucune partie ${filter === 'in_progress' ? 'en cours' : 'terminée'}`}
           </p>
-          {filter === 'all' && (
-            <Link to="/games/new">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Créer la première partie
-              </Button>
-            </Link>
-          )}
         </div>
       ) : (
         <div className="space-y-3">
