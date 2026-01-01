@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Home, Trophy, Users, FileText, Download, Cloud, X } from 'lucide-react'
+import { Home, Trophy, Users, FileText, Download, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { Button } from '@/components/ui/Button'
 import packageJson from '../../../package.json'
@@ -16,7 +16,6 @@ export function Drawer({ open, onOpenChange }: DrawerProps) {
     { icon: Users, label: 'Joueurs', to: '/players' },
     { icon: FileText, label: 'Modèles de jeux', to: '/models' },
     { icon: Download, label: 'Import/Export', to: '/import-export' },
-    { icon: Cloud, label: 'Sauvegarde', to: '/backup' },
   ]
 
   return (

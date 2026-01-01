@@ -12,7 +12,6 @@ import { ModelsListPage } from './routes/models/list/ModelsListPage'
 import { ModelCreatePage } from './routes/models/create/ModelCreatePage'
 import { ModelEditPage } from './routes/models/edit/ModelEditPage'
 import { ImportExportPage } from './routes/import-export/ImportExportPage'
-import { BackupPage } from './routes/backup/BackupPage'
 
 const rootRoute = createRootRoute({
   component: AppShell,
@@ -90,12 +89,6 @@ const importExportRoute = createRoute({
   component: ImportExportPage,
 })
 
-const backupRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/backup',
-  component: BackupPage,
-})
-
 const routeTree = rootRoute.addChildren([
   indexRoute,
   gamesRoute,
@@ -109,7 +102,6 @@ const routeTree = rootRoute.addChildren([
   modelCreateRoute,
   modelEditRoute,
   importExportRoute,
-  backupRoute,
 ])
 
 export const router = createRouter({
