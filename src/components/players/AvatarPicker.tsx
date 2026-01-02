@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { AVATAR_ICONS } from '@/lib/avatarIcons'
 import { cn } from '@/lib/cn'
 import * as Icons from 'lucide-react'
 import { Label } from '@/components/ui/Label'
+import { Upload, X } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 
 interface AvatarPickerProps {
   type: 'initial' | 'icon' | 'image'
@@ -19,15 +21,47 @@ export function AvatarPicker({
   onValueChange,
   playerName
 }: AvatarPickerProps) {
-  const [selectedTab, setSelectedTab] = useState<'initial' | 'icon'>(
-    type === 'image' ? 'icon' : type
-  )
+  const [selectedTab, setSelectedTab] = useState<'initial' | 'icon' | 'image'>(type)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleTabChange = (newTab: 'initial' | 'icon') => {
+  const handleTabChange = (newTab: 'initial' | 'icon' | 'image') => {
     setSelectedTab(newTab)
     onTypeChange(newTab)
     if (newTab === 'initial') {
       onValueChange(playerName.charAt(0).toUpperCase())
+    }
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Check file size (max 500KB)
+    if (file.size > 500 * 1024) {
+      alert('L\'image est trop grande. Maximum 500 KB.')
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner une image.')
+      return
+    }
+
+    // Convert to base64
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string
+      onTypeChange('image')
+      onValueChange(base64)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveImage = () => {
+    onValueChange('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -60,6 +94,18 @@ export function AvatarPicker({
           onClick={() => handleTabChange('icon')}
         >
           Icône
+        </button>
+        <button
+          type="button"
+          className={cn(
+            'px-4 py-2 text-sm font-medium transition-colors touch-manipulation',
+            selectedTab === 'image'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+          onClick={() => handleTabChange('image')}
+        >
+          Image
         </button>
       </div>
 
@@ -104,6 +150,53 @@ export function AvatarPicker({
               </button>
             )
           })}
+        </div>
+      )}
+
+      {selectedTab === 'image' && (
+        <div className="space-y-4">
+          {type === 'image' && value ? (
+            <div className="relative inline-block">
+              <img
+                src={value}
+                alt="Avatar"
+                className="h-32 w-32 rounded-full object-cover border-2 border-border"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
+                onClick={handleRemoveImage}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4 p-6 border-2 border-dashed border-border rounded-lg">
+              <Upload className="h-12 w-12 text-muted-foreground" />
+              <div className="text-center">
+                <p className="text-sm font-medium">Télécharger une image</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  PNG, JPG jusqu'à 500 KB
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Choisir une image
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
