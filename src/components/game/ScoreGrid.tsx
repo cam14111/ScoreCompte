@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
@@ -32,6 +32,9 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   const [inputValue, setInputValue] = useState('')
   const [scoringMode, setScoringMode] = useState<'NORMAL' | 'INVERTED'>('NORMAL')
   const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirm()
+
+  // Ref pour gérer la transition tactile entre cellules
+  const nextCellToEditRef = useRef<{ turnId: string; playerId: string; value?: number } | null>(null)
 
   useEffect(() => {
     loadGameData()
@@ -71,11 +74,18 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   }
 
   const handleCellClick = (turnId: string, playerId: string, currentValue?: number) => {
+    // Si une cellule est déjà en édition, stocker la prochaine pour le blur
+    if (editingCell) {
+      nextCellToEditRef.current = { turnId, playerId, value: currentValue }
+      return
+    }
+
+    // Sinon, ouvrir directement la cellule
     setEditingCell({ turnId, playerId })
     setInputValue(currentValue !== undefined ? String(currentValue) : '')
   }
 
-  const handleSaveScore = async () => {
+  const handleSaveScore = async (autoAdvance: boolean = false) => {
     if (!editingCell) return
 
     const points = parseInt(inputValue) || 0
@@ -92,6 +102,18 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
 
     // Sauvegarder le score
     await gamesRepository.setTurnScore(currentTurnId, currentPlayerId, points)
+
+    // Recharger les données pour afficher les changements
+    await loadGameData()
+
+    // Si pas d'auto-avancement (blur), simplement fermer l'édition
+    if (!autoAdvance) {
+      setEditingCell(null)
+      setInputValue('')
+      return
+    }
+
+    // === Auto-avancement uniquement sur Enter ===
 
     // Vérifier si tous les scores du tour actuel sont maintenant saisis
     const currentTurnScores = await gamesRepository.getTurnScores(currentTurnId)
@@ -131,6 +153,9 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
       nextTurnId = newTurn.id
       nextPlayerId = players[0].playerId
       nextValue = undefined
+
+      // Recharger à nouveau pour obtenir le nouveau tour
+      await loadGameData()
     }
     // Sinon, rester sur le dernier joueur (tour incomplet)
     else {
@@ -139,18 +164,29 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
       nextValue = turns[currentTurnIndex].scores[nextPlayerId]
     }
 
-    // Recharger les données pour afficher les changements
-    await loadGameData()
-
     // Mettre le focus sur la cellule suivante
     setEditingCell({ turnId: nextTurnId, playerId: nextPlayerId })
     setInputValue(nextValue !== undefined ? String(nextValue) : '')
   }
 
+  const handleBlur = async () => {
+    await handleSaveScore(false) // Sauvegarde sans auto-avancement
+
+    // Si une nouvelle cellule doit être ouverte (clic tactile pendant l'édition)
+    if (nextCellToEditRef.current) {
+      const { turnId, playerId, value } = nextCellToEditRef.current
+      nextCellToEditRef.current = null
+      setEditingCell({ turnId, playerId })
+      setInputValue(value !== undefined ? String(value) : '')
+    }
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSaveScore()
+      nextCellToEditRef.current = null // Annuler toute cellule en attente
+      handleSaveScore(true) // Auto-avancement activé sur Enter
     } else if (e.key === 'Escape') {
+      nextCellToEditRef.current = null // Annuler toute cellule en attente
       setEditingCell(null)
       setInputValue('')
     }
@@ -256,7 +292,7 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
                           className="w-full h-full p-2 text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
-                          onBlur={handleSaveScore}
+                          onBlur={handleBlur}
                           onKeyDown={handleKeyPress}
                           autoFocus
                         />
