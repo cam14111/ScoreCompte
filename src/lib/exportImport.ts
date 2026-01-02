@@ -212,7 +212,9 @@ export const importFromJSON = async (
       for (const player of data.players || []) {
         const existing = await db.players.get(player.id)
         if (!existing || mode === 'replace') {
-          await db.players.put({ ...player, dirty: true })
+          // Remove dirty field if it exists in imported data
+          const { dirty, ...cleanPlayer } = player
+          await db.players.put(cleanPlayer)
         }
       }
 
@@ -220,7 +222,8 @@ export const importFromJSON = async (
       for (const model of data.gameModels || []) {
         const existing = await db.gameModels.get(model.id)
         if (!existing || mode === 'replace') {
-          await db.gameModels.put({ ...model, dirty: true })
+          const { dirty, ...cleanModel } = model
+          await db.gameModels.put(cleanModel)
         }
       }
 
@@ -228,7 +231,8 @@ export const importFromJSON = async (
       for (const game of data.games || []) {
         const existing = await db.games.get(game.id)
         if (!existing || mode === 'replace') {
-          await db.games.put({ ...game, dirty: true })
+          const { dirty, ...cleanGame } = game
+          await db.games.put(cleanGame)
         }
       }
 
@@ -236,7 +240,8 @@ export const importFromJSON = async (
       for (const gp of data.gamePlayers || []) {
         const existing = await db.gamePlayers.get(gp.id)
         if (!existing || mode === 'replace') {
-          await db.gamePlayers.put({ ...gp, dirty: true })
+          const { dirty, ...cleanGp } = gp
+          await db.gamePlayers.put(cleanGp)
         }
       }
 
@@ -244,7 +249,8 @@ export const importFromJSON = async (
       for (const turn of data.turns || []) {
         const existing = await db.turns.get(turn.id)
         if (!existing || mode === 'replace') {
-          await db.turns.put({ ...turn, dirty: true })
+          const { dirty, ...cleanTurn } = turn
+          await db.turns.put(cleanTurn)
         }
       }
 
@@ -252,7 +258,8 @@ export const importFromJSON = async (
       for (const score of data.turnScores || []) {
         const existing = await db.turnScores.get(score.id)
         if (!existing || mode === 'replace') {
-          await db.turnScores.put({ ...score, dirty: true })
+          const { dirty, ...cleanScore } = score
+          await db.turnScores.put(cleanScore)
         }
       }
     })

@@ -22,8 +22,7 @@ export const playersRepository = {
       id: generateId(),
       ...data,
       createdAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     }
 
     await db.players.add(player)
@@ -33,16 +32,14 @@ export const playersRepository = {
   async update(id: string, data: Partial<Omit<Player, 'id' | 'createdAt'>>): Promise<void> {
     await db.players.update(id, {
       ...data,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
   async softDelete(id: string): Promise<void> {
     await db.players.update(id, {
       deletedAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 

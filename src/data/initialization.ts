@@ -5,9 +5,9 @@ const INIT_KEY = 'predefined_models_initialized'
 
 export async function initializePredefinedModels(): Promise<void> {
   try {
-    // Check if already initialized
-    const syncState = await db.syncState.get(INIT_KEY)
-    if (syncState) {
+    // Check if already initialized using localStorage
+    const initialized = localStorage.getItem(INIT_KEY)
+    if (initialized) {
       // Already initialized, skip
       return
     }
@@ -35,18 +35,13 @@ export async function initializePredefinedModels(): Promise<void> {
           isHidden: false,
           predefinedId: model.predefinedId,
           createdAt: now(),
-          updatedAt: now(),
-          dirty: false
+          updatedAt: now()
         })
       }
     }
 
     // Mark as initialized
-    await db.syncState.put({
-      key: INIT_KEY,
-      deviceId: crypto.randomUUID(),
-      updatedAt: now()
-    })
+    localStorage.setItem(INIT_KEY, 'true')
 
     console.log('Predefined models initialized successfully')
   } catch (error) {

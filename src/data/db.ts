@@ -10,7 +10,6 @@ export interface Player {
   createdAt: number
   updatedAt: number
   deletedAt?: number
-  dirty?: boolean
 }
 
 export interface GameModel {
@@ -30,7 +29,6 @@ export interface GameModel {
   createdAt: number
   updatedAt: number
   deletedAt?: number
-  dirty?: boolean
 }
 
 export interface Game {
@@ -50,7 +48,6 @@ export interface Game {
   createdAt: number
   updatedAt: number
   deletedAt?: number
-  dirty?: boolean
 }
 
 export interface GamePlayer {
@@ -61,7 +58,6 @@ export interface GamePlayer {
   createdAt: number
   updatedAt: number
   deletedAt?: number
-  dirty?: boolean
 }
 
 export interface Turn {
@@ -72,7 +68,6 @@ export interface Turn {
   createdAt: number
   updatedAt: number
   deletedAt?: number
-  dirty?: boolean
 }
 
 export interface TurnScore {
@@ -83,7 +78,6 @@ export interface TurnScore {
   createdAt: number
   updatedAt: number
   deletedAt?: number
-  dirty?: boolean
 }
 
 export interface Settings {
@@ -95,23 +89,6 @@ export interface Settings {
   updatedAt: number
 }
 
-export interface SyncOutbox {
-  id?: number
-  table: string
-  recordId: string
-  operation: 'upsert' | 'delete'
-  payload: any
-  createdAt: number
-  retries: number
-}
-
-export interface SyncState {
-  key: string
-  lastPullAt?: number
-  deviceId: string
-  updatedAt: number
-}
-
 class ScoreCounterDB extends Dexie {
   players!: Table<Player>
   gameModels!: Table<GameModel>
@@ -120,8 +97,6 @@ class ScoreCounterDB extends Dexie {
   turns!: Table<Turn>
   turnScores!: Table<TurnScore>
   settings!: Table<Settings>
-  syncOutbox!: Table<SyncOutbox>
-  syncState!: Table<SyncState>
 
   constructor() {
     super('ScoreCounterDB')
@@ -133,9 +108,7 @@ class ScoreCounterDB extends Dexie {
       gamePlayers: 'id, gameId, playerId, updatedAt, deletedAt',
       turns: 'id, gameId, turnIndex, updatedAt, deletedAt',
       turnScores: 'id, [turnId+playerId], turnId, playerId, updatedAt, deletedAt',
-      settings: 'userId',
-      syncOutbox: '++id, table, recordId, createdAt',
-      syncState: 'key'
+      settings: 'userId'
     })
 
     // Version 2: Add isPredefined and isHidden indexes to gameModels
