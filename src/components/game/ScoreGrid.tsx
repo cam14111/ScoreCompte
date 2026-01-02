@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
@@ -32,6 +32,9 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   const [inputValue, setInputValue] = useState('')
   const [scoringMode, setScoringMode] = useState<'NORMAL' | 'INVERTED'>('NORMAL')
   const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirm()
+
+  // Ref pour gérer la transition tactile entre cellules
+  const nextCellToEditRef = useRef<{ turnId: string; playerId: string; value?: number } | null>(null)
 
   useEffect(() => {
     loadGameData()
@@ -71,6 +74,13 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   }
 
   const handleCellClick = (turnId: string, playerId: string, currentValue?: number) => {
+    // Si une cellule est déjà en édition, stocker la prochaine pour le blur
+    if (editingCell) {
+      nextCellToEditRef.current = { turnId, playerId, value: currentValue }
+      return
+    }
+
+    // Sinon, ouvrir directement la cellule
     setEditingCell({ turnId, playerId })
     setInputValue(currentValue !== undefined ? String(currentValue) : '')
   }
@@ -159,14 +169,24 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
     setInputValue(nextValue !== undefined ? String(nextValue) : '')
   }
 
-  const handleBlur = () => {
-    handleSaveScore(false) // Sauvegarde sans auto-avancement
+  const handleBlur = async () => {
+    await handleSaveScore(false) // Sauvegarde sans auto-avancement
+
+    // Si une nouvelle cellule doit être ouverte (clic tactile pendant l'édition)
+    if (nextCellToEditRef.current) {
+      const { turnId, playerId, value } = nextCellToEditRef.current
+      nextCellToEditRef.current = null
+      setEditingCell({ turnId, playerId })
+      setInputValue(value !== undefined ? String(value) : '')
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      nextCellToEditRef.current = null // Annuler toute cellule en attente
       handleSaveScore(true) // Auto-avancement activé sur Enter
     } else if (e.key === 'Escape') {
+      nextCellToEditRef.current = null // Annuler toute cellule en attente
       setEditingCell(null)
       setInputValue('')
     }
