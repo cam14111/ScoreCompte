@@ -11,6 +11,7 @@ const GameResultsPage = lazy(() => import('./routes/games/results/GameResultsPag
 const PlayersListPage = lazy(() => import('./routes/players/list/PlayersListPage').then(m => ({ default: m.PlayersListPage })))
 const PlayerCreatePage = lazy(() => import('./routes/players/create/PlayerCreatePage').then(m => ({ default: m.PlayerCreatePage })))
 const PlayerEditPage = lazy(() => import('./routes/players/edit/PlayerEditPage').then(m => ({ default: m.PlayerEditPage })))
+const PlayerStatsPage = lazy(() => import('./routes/players/stats/PlayerStatsPage').then(m => ({ default: m.PlayerStatsPage })))
 const ModelsListPage = lazy(() => import('./routes/models/list/ModelsListPage').then(m => ({ default: m.ModelsListPage })))
 const ModelCreatePage = lazy(() => import('./routes/models/create/ModelCreatePage').then(m => ({ default: m.ModelCreatePage })))
 const ModelEditPage = lazy(() => import('./routes/models/edit/ModelEditPage').then(m => ({ default: m.ModelEditPage })))
@@ -88,6 +89,12 @@ const playerEditRoute = createRoute({
   component: withSuspense(PlayerEditPage),
 })
 
+const playerStatsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/players/$playerId/stats',
+  component: withSuspense(PlayerStatsPage),
+})
+
 const modelsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/models',
@@ -121,6 +128,7 @@ const routeTree = rootRoute.addChildren([
   playersRoute,
   playerCreateRoute,
   playerEditRoute,
+  playerStatsRoute,
   modelsRoute,
   modelCreateRoute,
   modelEditRoute,

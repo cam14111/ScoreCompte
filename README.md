@@ -2,13 +2,29 @@
 
 Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
-![Version](https://img.shields.io/badge/version-1.6.0-blue)
+![Version](https://img.shields.io/badge/version-1.7.0-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
 ![Offline](https://img.shields.io/badge/offline-100%25-brightgreen)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-success)
 ![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 
-## 🆕 Nouveautés Version 1.6.x
+## 🆕 Nouveautés Version 1.7.x
+
+### Statistiques Avancées & Avatars Personnalisés (1.7.0) 🎨📊
+- **Statistiques Avancées par Joueur** :
+  - Moyenne de points par partie
+  - Taux de victoire en pourcentage
+  - Classement moyen
+  - Meilleur et pire score
+  - Total de points cumulés
+  - Historique complet des parties avec détails (score, rang, adversaires)
+  - Page dédiée accessible depuis le profil joueur
+- **Avatars Personnalisés** :
+  - Upload d'images personnelles (jusqu'à 500 KB)
+  - Support PNG, JPG et autres formats image
+  - Stockage local en base64
+  - Nouvel onglet "Image" dans le sélecteur d'avatar
+  - Prévisualisation et suppression facile
 
 ### Optimisations de Performance (1.6.0) ⚡
 - **Code Splitting** : Routes lazy-loadées avec React.lazy() et Suspense
@@ -70,9 +86,13 @@ Application web progressive (PWA) mobile-first pour le comptage de scores de jeu
 - **Avatars personnalisables**
   - Initiales auto-générées
   - 25+ icônes Lucide
-  - Upload d'images (ready)
+  - Upload d'images personnelles (PNG, JPG, 500 KB max) ✨ NEW
 - **Palette de 17 couleurs** avec contraste intelligent
-- **Statistiques** individuelles
+- **Statistiques** individuelles basiques (parties, victoires)
+- **Statistiques avancées** ✨ NEW :
+  - Moyenne de points, taux de victoire, classement moyen
+  - Meilleur/pire score
+  - Historique détaillé des parties
 
 ### 🎲 Modèles de Jeux
 - **Création de modèles réutilisables**
@@ -251,8 +271,9 @@ src/
 ## 🔜 Roadmap
 
 ### Fonctionnalités Futures
-- [ ] **Graphiques & Statistiques** : Visualisation de l'évolution des scores
-- [ ] **Avatars personnalisés** : Upload d'images pour les avatars des joueurs
+- [x] **Statistiques avancées** ✅ v1.7.0
+- [x] **Avatars personnalisés** (upload d'images) ✅ v1.7.0
+- [ ] **Graphiques** : Visualisation de l'évolution des scores (courbes, barres)
 - [ ] **Multi-langue** : Support français/anglais
 - [ ] **Notifications PWA** : Rappel pour les parties en cours
 - [ ] **Partage de parties** : Export de résultats à partager
@@ -321,9 +342,10 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 
 ---
 
-**Version actuelle** : 1.6.0
+**Version actuelle** : 1.7.0
 **Dernière mise à jour** : 2 janvier 2026
-**Status** : ✅ Production Ready (Performance Optimized)
+**Status** : ✅ Production Ready (Feature Complete)
 **Déploiement** : GitHub Pages
 **Stockage** : 100% Local (IndexedDB)
 **Bundle** : ~250 KB (vendors gzippés) + routes lazy-loadées (2-10 KB)
+**Nouveautés** : Statistiques avancées + Avatars personnalisés

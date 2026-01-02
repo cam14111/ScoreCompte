@@ -8,7 +8,7 @@ import { ColorPicker } from '@/components/players/ColorPicker'
 import { AvatarPicker } from '@/components/players/AvatarPicker'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { ArrowLeft, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, BarChart3 } from 'lucide-react'
 import type { Player } from '@/data/db'
 import { useAlertDialog } from '@/contexts/AlertContext'
 import { useConfirm } from '@/hooks/useDialog'
@@ -115,17 +115,26 @@ export function PlayerEditPage() {
       />
       <div className="container mx-auto p-4 max-w-2xl">
         <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate({ to: '/players' })}
-          className="mb-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Retour
-        </Button>
-        <h1 className="text-2xl font-bold">Modifier joueur</h1>
-      </div>
+          <div className="flex items-center justify-between mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: '/players' })}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Retour
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate({ to: '/players/$playerId/stats', params: { playerId } })}
+            >
+              <BarChart3 className="h-4 w-4 mr-1" />
+              Statistiques
+            </Button>
+          </div>
+          <h1 className="text-2xl font-bold">Modifier joueur</h1>
+        </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Preview */}
