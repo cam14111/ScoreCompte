@@ -38,8 +38,7 @@ export const gamesRepository = {
       showIntermediate: data.showIntermediate,
       startedAt: now(),
       createdAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     }
 
     await db.games.add(game)
@@ -52,8 +51,7 @@ export const gamesRepository = {
         playerId: data.playerIds[i],
         sortOrder: i,
         createdAt: now(),
-        updatedAt: now(),
-        dirty: true
+        updatedAt: now()
       }
       await db.gamePlayers.add(gamePlayer)
     }
@@ -64,8 +62,7 @@ export const gamesRepository = {
   async update(id: string, data: Partial<Omit<Game, 'id' | 'createdAt'>>): Promise<void> {
     await db.games.update(id, {
       ...data,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
@@ -74,16 +71,14 @@ export const gamesRepository = {
       status: 'FINISHED',
       finishedAt: now(),
       winnerPlayerId,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
   async softDelete(id: string): Promise<void> {
     await db.games.update(id, {
       deletedAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
@@ -121,8 +116,7 @@ export const gamesRepository = {
       turnIndex,
       currentPlayerId,
       createdAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     }
     await db.turns.add(turn)
     return turn
@@ -132,16 +126,14 @@ export const gamesRepository = {
     // Soft delete turn and all its scores
     await db.turns.update(turnId, {
       deletedAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
 
     const scores = await db.turnScores.where('turnId').equals(turnId).toArray()
     for (const score of scores) {
       await db.turnScores.update(score.id, {
         deletedAt: now(),
-        updatedAt: now(),
-        dirty: true
+        updatedAt: now()
       })
     }
   },
@@ -165,8 +157,7 @@ export const gamesRepository = {
     if (existing) {
       await db.turnScores.update(existing.id, {
         points,
-        updatedAt: now(),
-        dirty: true
+        updatedAt: now()
       })
     } else {
       const turnScore: TurnScore = {
@@ -175,8 +166,7 @@ export const gamesRepository = {
         playerId,
         points,
         createdAt: now(),
-        updatedAt: now(),
-        dirty: true
+        updatedAt: now()
       }
       await db.turnScores.add(turnScore)
     }

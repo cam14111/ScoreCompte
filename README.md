@@ -1,6 +1,6 @@
 # 🎯 Score Counter - PWA de Comptage de Scores
 
-Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec synchronisation cloud optionnelle.
+Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
 ![Version](https://img.shields.io/badge/version-1.5.6-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
@@ -161,9 +161,7 @@ src/
 │   │   ├── games/        # Création, listing, détail, résultats
 │   │   ├── players/      # CRUD joueurs
 │   │   ├── models/       # CRUD modèles
-│   │   ├── settings/
-│   │   ├── import-export/
-│   │   └── backup/       # (Supabase - à venir)
+│   │   └── import-export/
 │   └── router.tsx
 ├── components/
 │   ├── ui/               # Composants shadcn (Button, Card, etc.)
@@ -196,12 +194,11 @@ src/
 - **turns** : Tours de jeu
 - **turnScores** : Scores par tour et par joueur
 - **settings** : Préférences utilisateur
-- **syncOutbox** : Queue de synchronisation (ready for Supabase)
 
 ### Indexes Optimisés
-- `(gameId, turnIndex)` sur turns
-- `(turnId, playerId)` sur turnScores
-- `(userId, updatedAt)` pour la sync (ready)
+- `(gameId, turnIndex)` sur turns pour récupération rapide
+- `(turnId, playerId)` sur turnScores pour calculs efficaces
+- Soft delete avec `deletedAt` pour toutes les entités
 
 ## 🎨 Design System
 
@@ -232,20 +229,17 @@ src/
 
 3. **Offline complet**
    - Pas de connexion nécessaire
-   - Toutes les données en local
-   - Sync optionnelle (Supabase à venir)
+   - Toutes les données stockées localement (IndexedDB)
+   - Export/Import pour sauvegarde et transfert entre appareils
 
 ## 🔜 Roadmap
 
-### Supabase Integration (En préparation)
-> Note: La dépendance `@supabase/supabase-js` est installée et le cache Supabase est configuré dans le Service Worker, mais l'intégration complète n'est pas encore implémentée.
-
-- [ ] Authentification (Magic Link / OTP)
-- [ ] Backup automatique vers cloud
-- [ ] Synchronisation multi-devices
-- [ ] Stratégie de résolution de conflits (last-write-wins)
-- [ ] Upload d'avatars vers Supabase Storage
-- [ ] Tables SyncOutbox et SyncState déjà prêtes en local
+### Fonctionnalités Futures
+- [ ] **Graphiques & Statistiques** : Visualisation de l'évolution des scores
+- [ ] **Avatars personnalisés** : Upload d'images pour les avatars des joueurs
+- [ ] **Multi-langue** : Support français/anglais
+- [ ] **Notifications PWA** : Rappel pour les parties en cours
+- [ ] **Partage de parties** : Export de résultats à partager
 
 ### Optimisations
 - [ ] Code splitting (dynamic imports)
@@ -307,4 +301,4 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 **Dernière mise à jour** : 2 janvier 2026
 **Status** : ✅ Production Ready
 **Déploiement** : GitHub Pages
-**Supabase** : 🚧 En préparation (dépendances installées)
+**Stockage** : 100% Local (IndexedDB)

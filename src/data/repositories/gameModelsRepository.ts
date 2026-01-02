@@ -30,8 +30,7 @@ export const gameModelsRepository = {
       isPredefined: false,
       isHidden: false,
       createdAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     }
 
     await db.gameModels.add(model)
@@ -41,8 +40,7 @@ export const gameModelsRepository = {
   async update(id: string, data: Partial<Omit<GameModel, 'id' | 'createdAt'>>): Promise<void> {
     await db.gameModels.update(id, {
       ...data,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
@@ -55,8 +53,7 @@ export const gameModelsRepository = {
 
     await db.gameModels.update(id, {
       deletedAt: now(),
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
@@ -77,16 +74,14 @@ export const gameModelsRepository = {
   async hide(id: string): Promise<void> {
     await db.gameModels.update(id, {
       isHidden: true,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
   async show(id: string): Promise<void> {
     await db.gameModels.update(id, {
       isHidden: false,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   },
 
@@ -110,8 +105,7 @@ export const gameModelsRepository = {
       turnLimit: predefinedData.turnLimit,
       showTurns: predefinedData.showTurns,
       showIntermediate: predefinedData.showIntermediate,
-      updatedAt: now(),
-      dirty: true
+      updatedAt: now()
     })
   }
 }
