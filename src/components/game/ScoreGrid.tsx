@@ -75,7 +75,7 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
     setInputValue(currentValue !== undefined ? String(currentValue) : '')
   }
 
-  const handleSaveScore = async () => {
+  const handleSaveScore = async (autoAdvance: boolean = false) => {
     if (!editingCell) return
 
     const points = parseInt(inputValue) || 0
@@ -92,6 +92,18 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
 
     // Sauvegarder le score
     await gamesRepository.setTurnScore(currentTurnId, currentPlayerId, points)
+
+    // Recharger les données pour afficher les changements
+    await loadGameData()
+
+    // Si pas d'auto-avancement (blur), simplement fermer l'édition
+    if (!autoAdvance) {
+      setEditingCell(null)
+      setInputValue('')
+      return
+    }
+
+    // === Auto-avancement uniquement sur Enter ===
 
     // Vérifier si tous les scores du tour actuel sont maintenant saisis
     const currentTurnScores = await gamesRepository.getTurnScores(currentTurnId)
@@ -131,6 +143,9 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
       nextTurnId = newTurn.id
       nextPlayerId = players[0].playerId
       nextValue = undefined
+
+      // Recharger à nouveau pour obtenir le nouveau tour
+      await loadGameData()
     }
     // Sinon, rester sur le dernier joueur (tour incomplet)
     else {
@@ -139,17 +154,18 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
       nextValue = turns[currentTurnIndex].scores[nextPlayerId]
     }
 
-    // Recharger les données pour afficher les changements
-    await loadGameData()
-
     // Mettre le focus sur la cellule suivante
     setEditingCell({ turnId: nextTurnId, playerId: nextPlayerId })
     setInputValue(nextValue !== undefined ? String(nextValue) : '')
   }
 
+  const handleBlur = () => {
+    handleSaveScore(false) // Sauvegarde sans auto-avancement
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSaveScore()
+      handleSaveScore(true) // Auto-avancement activé sur Enter
     } else if (e.key === 'Escape') {
       setEditingCell(null)
       setInputValue('')
@@ -256,7 +272,7 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
                           className="w-full h-full p-2 text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
-                          onBlur={handleSaveScore}
+                          onBlur={handleBlur}
                           onKeyDown={handleKeyPress}
                           autoFocus
                         />
