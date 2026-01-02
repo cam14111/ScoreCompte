@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
@@ -17,7 +18,7 @@ interface GameCardProps {
   onDelete?: (gameId: string) => void
 }
 
-export function GameCard({ game, players, turnCount = 0, winner, onDelete }: GameCardProps) {
+export const GameCard = memo(function GameCard({ game, players, turnCount = 0, winner, onDelete }: GameCardProps) {
   const isFinished = game.status === 'FINISHED'
   const { isOpen, options, confirm, handleConfirm, handleCancel } = useConfirm()
 
@@ -142,4 +143,4 @@ export function GameCard({ game, players, turnCount = 0, winner, onDelete }: Gam
       </div>
     </>
   )
-}
+})

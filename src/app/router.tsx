@@ -1,17 +1,40 @@
+import { lazy, Suspense } from 'react'
 import { createRouter, createRoute, createRootRoute } from '@tanstack/react-router'
 import { AppShell } from './layout/AppShell'
 import { HomePage } from './routes/home/HomePage'
-import { GamesListPage } from './routes/games/list/GamesListPage'
-import { GameCreatePage } from './routes/games/create/GameCreatePage'
-import { GameDetailPage } from './routes/games/detail/GameDetailPage'
-import { GameResultsPage } from './routes/games/results/GameResultsPage'
-import { PlayersListPage } from './routes/players/list/PlayersListPage'
-import { PlayerCreatePage } from './routes/players/create/PlayerCreatePage'
-import { PlayerEditPage } from './routes/players/edit/PlayerEditPage'
-import { ModelsListPage } from './routes/models/list/ModelsListPage'
-import { ModelCreatePage } from './routes/models/create/ModelCreatePage'
-import { ModelEditPage } from './routes/models/edit/ModelEditPage'
-import { ImportExportPage } from './routes/import-export/ImportExportPage'
+
+// Lazy-loaded route components for code splitting
+const GamesListPage = lazy(() => import('./routes/games/list/GamesListPage').then(m => ({ default: m.GamesListPage })))
+const GameCreatePage = lazy(() => import('./routes/games/create/GameCreatePage').then(m => ({ default: m.GameCreatePage })))
+const GameDetailPage = lazy(() => import('./routes/games/detail/GameDetailPage').then(m => ({ default: m.GameDetailPage })))
+const GameResultsPage = lazy(() => import('./routes/games/results/GameResultsPage').then(m => ({ default: m.GameResultsPage })))
+const PlayersListPage = lazy(() => import('./routes/players/list/PlayersListPage').then(m => ({ default: m.PlayersListPage })))
+const PlayerCreatePage = lazy(() => import('./routes/players/create/PlayerCreatePage').then(m => ({ default: m.PlayerCreatePage })))
+const PlayerEditPage = lazy(() => import('./routes/players/edit/PlayerEditPage').then(m => ({ default: m.PlayerEditPage })))
+const ModelsListPage = lazy(() => import('./routes/models/list/ModelsListPage').then(m => ({ default: m.ModelsListPage })))
+const ModelCreatePage = lazy(() => import('./routes/models/create/ModelCreatePage').then(m => ({ default: m.ModelCreatePage })))
+const ModelEditPage = lazy(() => import('./routes/models/edit/ModelEditPage').then(m => ({ default: m.ModelEditPage })))
+const ImportExportPage = lazy(() => import('./routes/import-export/ImportExportPage').then(m => ({ default: m.ImportExportPage })))
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+        <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Chargement...</span>
+      </div>
+    </div>
+  </div>
+)
+
+// Wrapper to add Suspense around lazy components
+const withSuspense = (Component: React.ComponentType) => {
+  return () => (
+    <Suspense fallback={<LoadingFallback />}>
+      <Component />
+    </Suspense>
+  )
+}
 
 const rootRoute = createRootRoute({
   component: AppShell,
@@ -20,73 +43,73 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: HomePage,
+  component: HomePage, // Keep home page eager-loaded for initial performance
 })
 
 const gamesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/games',
-  component: GamesListPage,
+  component: withSuspense(GamesListPage),
 })
 
 const gameCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/games/new',
-  component: GameCreatePage,
+  component: withSuspense(GameCreatePage),
 })
 
 const gameDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/games/$gameId',
-  component: GameDetailPage,
+  component: withSuspense(GameDetailPage),
 })
 
 const gameResultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/games/$gameId/results',
-  component: GameResultsPage,
+  component: withSuspense(GameResultsPage),
 })
 
 const playersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/players',
-  component: PlayersListPage,
+  component: withSuspense(PlayersListPage),
 })
 
 const playerCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/players/new',
-  component: PlayerCreatePage,
+  component: withSuspense(PlayerCreatePage),
 })
 
 const playerEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/players/$playerId',
-  component: PlayerEditPage,
+  component: withSuspense(PlayerEditPage),
 })
 
 const modelsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/models',
-  component: ModelsListPage,
+  component: withSuspense(ModelsListPage),
 })
 
 const modelCreateRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/models/new',
-  component: ModelCreatePage,
+  component: withSuspense(ModelCreatePage),
 })
 
 const modelEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/models/$modelId',
-  component: ModelEditPage,
+  component: withSuspense(ModelEditPage),
 })
 
 const importExportRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/import-export',
-  component: ImportExportPage,
+  component: withSuspense(ImportExportPage),
 })
 
 const routeTree = rootRoute.addChildren([
