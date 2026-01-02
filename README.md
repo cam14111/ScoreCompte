@@ -2,12 +2,28 @@
 
 Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
-![Version](https://img.shields.io/badge/version-1.5.6-blue)
+![Version](https://img.shields.io/badge/version-1.6.0-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
 ![Offline](https://img.shields.io/badge/offline-100%25-brightgreen)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-success)
+![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 
-## 🆕 Nouveautés Version 1.5.x
+## 🆕 Nouveautés Version 1.6.x
+
+### Optimisations de Performance (1.6.0) ⚡
+- **Code Splitting** : Routes lazy-loadées avec React.lazy() et Suspense
+  - Bundle initial réduit de ~30%
+  - Chargement à la demande (2-10 KB par route)
+  - LoadingFallback avec spinner pour transitions fluides
+- **Chunk Splitting Optimisé** : Vendors séparés pour meilleur caching
+  - react-vendor (44.81 KB gzippé)
+  - router-vendor (24.49 KB gzippé)
+  - db-vendor (30.61 KB gzippé)
+  - date-vendor (6.32 KB gzippé)
+  - ui-vendor (137.72 KB gzippé)
+- **React.memo** : PlayerCard et GameCard mémorisés pour éviter re-renders inutiles
+- **Bundle Analyzer** : Visualisation du bundle avec rollup-plugin-visualizer
+- **Minification Terser** : Console.logs supprimés en production
 
 ### Améliorations UX & Performance (1.5.6)
 - **Navigation tactile optimisée** : Navigation fluide entre cellules de score au doigt
@@ -242,8 +258,11 @@ src/
 - [ ] **Partage de parties** : Export de résultats à partager
 
 ### Optimisations
-- [ ] Code splitting (dynamic imports)
-- [ ] Lazy loading des routes
+- [x] **Code splitting** (dynamic imports) ✅ v1.6.0
+- [x] **Lazy loading des routes** ✅ v1.6.0
+- [x] **Vendor chunk splitting** ✅ v1.6.0
+- [x] **React.memo sur composants de liste** ✅ v1.6.0
+- [x] **Bundle analyzer** ✅ v1.6.0
 - [ ] Image optimization
 - [ ] Analytics (optionnel)
 
@@ -274,9 +293,14 @@ src/
 ### Performance
 - **IndexedDB** : rapide, pas de limite de taille (>50MB typique)
 - **Service Worker** : cache agressif des assets, mise à jour automatique
-- **Bundle size** : ~1.2MB (optimisable avec code splitting)
+- **Bundle optimisé** :
+  - Code splitting avec lazy routes (2-10 KB par route)
+  - Vendor chunks séparés pour meilleur caching
+  - Total gzippé : ~250 KB (vendors) + routes à la demande
+  - React.memo sur composants de liste pour éviter re-renders
 - **Navigation tactile** : Optimisée pour une utilisation mobile fluide
 - **Édition en place** : Pas de rechargement de page, modifications instantanées
+- **Analyse de bundle** : `npm run build` génère `dist/stats.html` pour visualisation
 
 ### Accessibilité
 - **Touch-optimized** : Zones tactiles généreuses pour mobile
@@ -297,8 +321,9 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 
 ---
 
-**Version actuelle** : 1.5.6
+**Version actuelle** : 1.6.0
 **Dernière mise à jour** : 2 janvier 2026
-**Status** : ✅ Production Ready
+**Status** : ✅ Production Ready (Performance Optimized)
 **Déploiement** : GitHub Pages
 **Stockage** : 100% Local (IndexedDB)
+**Bundle** : ~250 KB (vendors gzippés) + routes lazy-loadées (2-10 KB)

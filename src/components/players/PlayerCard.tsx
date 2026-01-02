@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Card, CardHeader } from '@/components/ui/Card'
 import { PlayerAvatar } from './PlayerAvatar'
@@ -13,7 +14,7 @@ interface PlayerCardProps {
   }
 }
 
-export function PlayerCard({ player, stats }: PlayerCardProps) {
+export const PlayerCard = memo(function PlayerCard({ player, stats }: PlayerCardProps) {
   return (
     <Link to="/players/$playerId" params={{ playerId: player.id }}>
       <Card className="cursor-pointer hover:bg-accent/50 transition-colors touch-manipulation">
@@ -48,4 +49,4 @@ export function PlayerCard({ player, stats }: PlayerCardProps) {
       </Card>
     </Link>
   )
-}
+})
