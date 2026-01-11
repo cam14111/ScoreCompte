@@ -2,13 +2,24 @@
 
 Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
-![Version](https://img.shields.io/badge/version-1.7.0-blue)
+![Version](https://img.shields.io/badge/version-1.7.1-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
 ![Offline](https://img.shields.io/badge/offline-100%25-brightgreen)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-success)
 ![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 
 ## 🆕 Nouveautés Version 1.7.x
+
+### Corrections & Améliorations (1.7.1) 🔧
+- **Protection des modèles prédéfinis** :
+  - Les 7 modèles de jeux prédéfinis ne peuvent plus être supprimés
+  - Seuls les modèles créés par l'utilisateur peuvent être supprimés
+  - Les modèles prédéfinis peuvent être modifiés ou masqués
+  - Message d'erreur explicite en cas de tentative de suppression
+- **Visibilité des modèles masqués** :
+  - Les modèles masqués restent visibles dans l'écran de gestion
+  - Bouton "Voir cachés" pour basculer l'affichage
+  - Les modèles masqués n'apparaissent plus dans la création de partie
 
 ### Statistiques Avancées & Avatars Personnalisés (1.7.0) 🎨📊
 - **Statistiques Avancées par Joueur** :
@@ -107,6 +118,14 @@ Application web progressive (PWA) mobile-first pour le comptage de scores de jeu
   - **5 Rois** : 2-7 joueurs, score inversé, 11 tours
   - **DEKAL** : 2-6 joueurs, score inversé, 16 tours
   - **Tarot** : 3-5 joueurs, score normal, tours illimités
+- **Protection des modèles prédéfinis** 🔒 :
+  - Les modèles prédéfinis **ne peuvent pas être supprimés**
+  - Ils peuvent uniquement être **modifiés** ou **masqués**
+  - Seuls les modèles personnalisés créés par l'utilisateur sont supprimables
+- **Masquage de modèles** :
+  - Masquer un modèle le retire de la liste de création de partie
+  - Il reste visible dans l'écran de gestion des modèles
+  - Bouton "Voir cachés" pour afficher/masquer les modèles cachés
 - **Validation** : impossible de supprimer un modèle en cours d'utilisation
 
 ### ⚙️ Paramètres & Personnalisation
@@ -342,10 +361,10 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 
 ---
 
-**Version actuelle** : 1.7.0
-**Dernière mise à jour** : 2 janvier 2026
+**Version actuelle** : 1.7.1
+**Dernière mise à jour** : 11 janvier 2026
 **Status** : ✅ Production Ready (Feature Complete)
 **Déploiement** : GitHub Pages
 **Stockage** : 100% Local (IndexedDB)
 **Bundle** : ~250 KB (vendors gzippés) + routes lazy-loadées (2-10 KB)
-**Nouveautés** : Statistiques avancées + Avatars personnalisés
+**Nouveautés** : Protection des modèles prédéfinis + Visibilité des modèles masqués
