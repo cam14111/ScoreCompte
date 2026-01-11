@@ -8,7 +8,8 @@ import { Plus, Users, TrendingDown, TrendingUp, Trophy, Hash, Eye, EyeOff, Star 
 
 export function ModelsListPage() {
   const [showHidden, setShowHidden] = useState(false)
-  const models = useLiveQuery(() => gameModelsRepository.getAll(showHidden), [showHidden])
+  // Always fetch all models including hidden ones for management purposes
+  const allModels = useLiveQuery(() => gameModelsRepository.getAll(true), [])
 
   const handleToggleVisibility = async (e: React.MouseEvent, modelId: string, isCurrentlyHidden: boolean) => {
     e.preventDefault()
@@ -21,7 +22,7 @@ export function ModelsListPage() {
     }
   }
 
-  if (!models) {
+  if (!allModels) {
     return (
       <div className="container mx-auto p-4">
         <p>Chargement...</p>
@@ -29,8 +30,11 @@ export function ModelsListPage() {
     )
   }
 
-  const visibleModels = models.filter(m => !m.isHidden)
-  const hiddenModels = models.filter(m => m.isHidden)
+  const visibleModels = allModels.filter(m => !m.isHidden)
+  const hiddenModels = allModels.filter(m => m.isHidden)
+
+  // Filter models to display based on showHidden state
+  const models = showHidden ? allModels : visibleModels
 
   return (
     <div className="container mx-auto p-4 space-y-4">
