@@ -1,4 +1,5 @@
 import { db, type Game, type GamePlayer, type Turn, type TurnScore, type Player, generateId, now } from '../db'
+import { markDataDirty } from './backupIntegration'
 
 export const gamesRepository = {
   // Games
@@ -56,6 +57,7 @@ export const gamesRepository = {
       await db.gamePlayers.add(gamePlayer)
     }
 
+    markDataDirty()
     return game
   },
 
@@ -64,6 +66,7 @@ export const gamesRepository = {
       ...data,
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async finishGame(gameId: string, winnerPlayerId?: string): Promise<void> {
@@ -73,6 +76,7 @@ export const gamesRepository = {
       winnerPlayerId,
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async softDelete(id: string): Promise<void> {
@@ -80,6 +84,7 @@ export const gamesRepository = {
       deletedAt: now(),
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   // Game Players
@@ -119,6 +124,7 @@ export const gamesRepository = {
       updatedAt: now()
     }
     await db.turns.add(turn)
+    markDataDirty()
     return turn
   },
 
@@ -136,6 +142,7 @@ export const gamesRepository = {
         updatedAt: now()
       })
     }
+    markDataDirty()
   },
 
   // Turn Scores
@@ -170,6 +177,7 @@ export const gamesRepository = {
       }
       await db.turnScores.add(turnScore)
     }
+    markDataDirty()
   },
 
   // Totals calculation

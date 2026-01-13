@@ -1,4 +1,5 @@
 import { db, type Player, generateId, now } from '../db'
+import { markDataDirty } from './backupIntegration'
 
 export const playersRepository = {
   async getAll(): Promise<Player[]> {
@@ -26,6 +27,7 @@ export const playersRepository = {
     }
 
     await db.players.add(player)
+    markDataDirty()
     return player
   },
 
@@ -34,6 +36,7 @@ export const playersRepository = {
       ...data,
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async softDelete(id: string): Promise<void> {
@@ -41,10 +44,12 @@ export const playersRepository = {
       deletedAt: now(),
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async hardDelete(id: string): Promise<void> {
     await db.players.delete(id)
+    markDataDirty()
   },
 
   async getStats(playerId: string): Promise<{

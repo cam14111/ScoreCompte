@@ -16,6 +16,7 @@ const ModelsListPage = lazy(() => import('./routes/models/list/ModelsListPage').
 const ModelCreatePage = lazy(() => import('./routes/models/create/ModelCreatePage').then(m => ({ default: m.ModelCreatePage })))
 const ModelEditPage = lazy(() => import('./routes/models/edit/ModelEditPage').then(m => ({ default: m.ModelEditPage })))
 const ImportExportPage = lazy(() => import('./routes/import-export/ImportExportPage').then(m => ({ default: m.ImportExportPage })))
+const BackupPage = lazy(() => import('./routes/backup/BackupPage').then(m => ({ default: m.BackupPage })))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -119,6 +120,12 @@ const importExportRoute = createRoute({
   component: withSuspense(ImportExportPage),
 })
 
+const backupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/backup',
+  component: withSuspense(BackupPage),
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   gamesRoute,
@@ -133,6 +140,7 @@ const routeTree = rootRoute.addChildren([
   modelCreateRoute,
   modelEditRoute,
   importExportRoute,
+  backupRoute,
 ])
 
 export const router = createRouter({

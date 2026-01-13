@@ -1,5 +1,6 @@
 import { db, type GameModel, generateId, now } from '../db'
 import { PREDEFINED_MODELS } from '../predefinedModels'
+import { markDataDirty } from './backupIntegration'
 
 export const gameModelsRepository = {
   async getAll(includeHidden = false): Promise<GameModel[]> {
@@ -34,6 +35,7 @@ export const gameModelsRepository = {
     }
 
     await db.gameModels.add(model)
+    markDataDirty()
     return model
   },
 
@@ -42,6 +44,7 @@ export const gameModelsRepository = {
       ...data,
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async softDelete(id: string): Promise<void> {
@@ -55,10 +58,12 @@ export const gameModelsRepository = {
       deletedAt: now(),
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async hardDelete(id: string): Promise<void> {
     await db.gameModels.delete(id)
+    markDataDirty()
   },
 
   async canDelete(modelId: string): Promise<boolean> {
@@ -76,6 +81,7 @@ export const gameModelsRepository = {
       isHidden: true,
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async show(id: string): Promise<void> {
@@ -83,6 +89,7 @@ export const gameModelsRepository = {
       isHidden: false,
       updatedAt: now()
     })
+    markDataDirty()
   },
 
   async restore(id: string): Promise<void> {
@@ -107,5 +114,6 @@ export const gameModelsRepository = {
       showIntermediate: predefinedData.showIntermediate,
       updatedAt: now()
     })
+    markDataDirty()
   }
 }
