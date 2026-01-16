@@ -309,7 +309,7 @@ export function BackupPage() {
                 onChange={(e) =>
                   updateConfig({ autoBackupInterval: Number(e.target.value) })
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-background text-foreground"
               >
                 <option value={15}>Toutes les 15 minutes</option>
                 <option value={30}>Toutes les 30 minutes</option>
@@ -328,7 +328,7 @@ export function BackupPage() {
                 onChange={(e) =>
                   updateConfig({ maxBackupsToKeep: Number(e.target.value) })
                 }
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border rounded bg-background text-foreground"
               >
                 <option value={3}>3 backups</option>
                 <option value={5}>5 backups</option>
