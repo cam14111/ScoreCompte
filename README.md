@@ -2,13 +2,41 @@
 
 Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
-![Version](https://img.shields.io/badge/version-1.7.1-blue)
+![Version](https://img.shields.io/badge/version-1.8.0-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
 ![Offline](https://img.shields.io/badge/offline-100%25-brightgreen)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-success)
 ![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 
-## 🆕 Nouveautés Version 1.7.x
+## 🆕 Nouveautés Version 1.8.x
+
+### Sauvegarde Google Drive (1.8.0) ☁️
+- **Connexion au compte Google** :
+  - Authentification OAuth 2.0 sécurisée via popup
+  - Scope restrictif : accès uniquement aux fichiers créés par l'app
+  - Affichage du nom et email du compte connecté
+  - Déconnexion avec révocation du token
+- **Sauvegarde automatique sur Google Drive** :
+  - Sauvegarde périodique configurable (15min, 30min, 1h, 2h)
+  - Sauvegarde automatique sur actions critiques (création/modification)
+  - Sauvegarde à la fermeture de l'application
+  - Compression gzip et vérification d'intégrité SHA-256
+- **Gestion des backups** :
+  - Liste des sauvegardes avec date, taille et appareil d'origine
+  - Restauration en mode "Fusion" ou "Remplacement"
+  - Backup de sécurité automatique avant restauration
+  - Purge automatique des anciens backups (configurable)
+- **Fonctionnement hors ligne** :
+  - Queue locale des backups en attente
+  - Synchronisation automatique au retour en ligne
+  - Retry avec backoff exponentiel (max 5 tentatives)
+- **Multi-appareils** :
+  - Synchronisation entre appareils via le même compte Google
+  - ID appareil inclus dans les métadonnées pour traçabilité
+
+📖 Voir [BACKUP_SETUP.md](./BACKUP_SETUP.md) pour la configuration détaillée.
+
+## Historique Version 1.7.x
 
 ### Corrections & Améliorations (1.7.1) 🔧
 - **Protection des modèles prédéfinis** :
@@ -133,10 +161,16 @@ Application web progressive (PWA) mobile-first pour le comptage de scores de jeu
 - **Contraste** : Défaut / Moyen / Élevé (accessibilité)
 - **Application en temps réel** des changements
 
-### 💾 Export / Import
+### 💾 Export / Import / Sauvegarde Cloud
+- **Sauvegarde Google Drive** ✨ NEW :
+  - Connexion sécurisée via compte Google (OAuth 2.0)
+  - Sauvegarde automatique et manuelle sur le cloud
+  - Restauration depuis n'importe quel appareil
+  - Fonctionnement hors ligne avec synchronisation automatique
+  - Voir [BACKUP_SETUP.md](./BACKUP_SETUP.md) pour la configuration
 - **Export JSON** avec filtres granulaires
   - Sélection : parties en cours, terminées, joueurs, modèles
-  - Sauvegarde complète pour backup
+  - Sauvegarde complète pour backup local
 - **Export CSV** compatible Excel
   - Résultats des parties terminées
   - Séparateur `;` pour Excel français
@@ -280,18 +314,25 @@ src/
 2. **Suivi long terme**
    - Statistiques par joueur
    - Export CSV pour analyse dans Excel
-   - Backup JSON avant changement d'appareil
+   - Sauvegarde automatique Google Drive
 
-3. **Offline complet**
-   - Pas de connexion nécessaire
+3. **Multi-appareils**
+   - Connectez votre compte Google une fois
+   - Vos données sont sauvegardées automatiquement dans le cloud
+   - Restaurez sur n'importe quel appareil (téléphone, tablette, PC)
+   - Synchronisation transparente
+
+4. **Offline complet**
+   - Pas de connexion nécessaire pour jouer
    - Toutes les données stockées localement (IndexedDB)
-   - Export/Import pour sauvegarde et transfert entre appareils
+   - Backups mis en queue et synchronisés au retour en ligne
 
 ## 🔜 Roadmap
 
 ### Fonctionnalités Futures
 - [x] **Statistiques avancées** ✅ v1.7.0
 - [x] **Avatars personnalisés** (upload d'images) ✅ v1.7.0
+- [x] **Sauvegarde Google Drive** ✅ v1.8.0
 - [ ] **Graphiques** : Visualisation de l'évolution des scores (courbes, barres)
 - [ ] **Multi-langue** : Support français/anglais
 - [ ] **Notifications PWA** : Rappel pour les parties en cours
@@ -361,10 +402,10 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 
 ---
 
-**Version actuelle** : 1.7.1
-**Dernière mise à jour** : 11 janvier 2026
+**Version actuelle** : 1.8.0
+**Dernière mise à jour** : 16 janvier 2026
 **Status** : ✅ Production Ready (Feature Complete)
 **Déploiement** : GitHub Pages
-**Stockage** : 100% Local (IndexedDB)
+**Stockage** : Local (IndexedDB) + Cloud (Google Drive)
 **Bundle** : ~250 KB (vendors gzippés) + routes lazy-loadées (2-10 KB)
-**Nouveautés** : Protection des modèles prédéfinis + Visibilité des modèles masqués
+**Nouveautés** : Sauvegarde automatique Google Drive avec connexion au compte Google

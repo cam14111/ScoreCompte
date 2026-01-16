@@ -229,8 +229,8 @@ Les repositories (`gamesRepository`, `playersRepository`, `gameModelsRepository`
 
 ## Licence & Support
 
-- **Projet** : ScoreCompte v1.7.1+
-- **Fonctionnalité** : Sauvegarde Google Drive
+- **Projet** : ScoreCompte v1.8.0+
+- **Fonctionnalité** : Sauvegarde Google Drive (introduite en v1.8.0)
 - **Support** : Ouvrir une issue sur GitHub
 
 ---
