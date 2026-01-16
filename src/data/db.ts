@@ -1,0 +1,131 @@
+import Dexie, { type Table } from 'dexie'
+
+// Types for our database entities
+export interface Player {
+  id: string
+  name: string
+  color: string
+  avatarType: 'initial' | 'icon' | 'image'
+  avatarValue: string
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+}
+
+export interface GameModel {
+  id: string
+  name: string
+  minPlayers: number
+  maxPlayers: number
+  scoringMode: 'NORMAL' | 'INVERTED'
+  scoreLimit?: number
+  turnLimit?: number
+  showTurns: boolean
+  showIntermediate: boolean
+  rules?: any
+  isPredefined?: boolean
+  isHidden?: boolean
+  predefinedId?: string
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+}
+
+export interface Game {
+  id: string
+  modelId?: string
+  title?: string
+  gameName: string
+  status: 'IN_PROGRESS' | 'FINISHED' | 'ARCHIVED'
+  scoreLimit?: number
+  turnLimit?: number
+  scoringMode: 'NORMAL' | 'INVERTED'
+  showTurns: boolean
+  showIntermediate: boolean
+  startedAt: number
+  finishedAt?: number
+  winnerPlayerId?: string
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+}
+
+export interface GamePlayer {
+  id: string
+  gameId: string
+  playerId: string
+  sortOrder: number
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+}
+
+export interface Turn {
+  id: string
+  gameId: string
+  turnIndex: number
+  currentPlayerId?: string
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+}
+
+export interface TurnScore {
+  id: string
+  turnId: string
+  playerId: string
+  points: number
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number
+}
+
+export interface Settings {
+  userId: string
+  theme: 'system' | 'light' | 'dark'
+  contrast: 'default' | 'medium' | 'high'
+  showTurns: boolean
+  showIntermediate: boolean
+  updatedAt: number
+}
+
+class ScoreCounterDB extends Dexie {
+  players!: Table<Player>
+  gameModels!: Table<GameModel>
+  games!: Table<Game>
+  gamePlayers!: Table<GamePlayer>
+  turns!: Table<Turn>
+  turnScores!: Table<TurnScore>
+  settings!: Table<Settings>
+
+  constructor() {
+    super('ScoreCounterDB')
+
+    this.version(1).stores({
+      players: 'id, name, updatedAt, deletedAt',
+      gameModels: 'id, name, updatedAt, deletedAt',
+      games: 'id, status, modelId, startedAt, updatedAt, deletedAt',
+      gamePlayers: 'id, gameId, playerId, updatedAt, deletedAt',
+      turns: 'id, gameId, turnIndex, updatedAt, deletedAt',
+      turnScores: 'id, [turnId+playerId], turnId, playerId, updatedAt, deletedAt',
+      settings: 'userId'
+    })
+
+    // Version 2: Add isPredefined and isHidden indexes to gameModels
+    this.version(2).stores({
+      gameModels: 'id, name, isPredefined, isHidden, updatedAt, deletedAt'
+    })
+  }
+}
+
+export const db = new ScoreCounterDB()
+
+// Helper to generate UUID v4
+export function generateId(): string {
+  return crypto.randomUUID()
+}
+
+// Helper to get current timestamp
+export function now(): number {
+  return Date.now()
+}
