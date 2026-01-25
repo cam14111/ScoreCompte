@@ -21,6 +21,7 @@ export function GameDetailPage() {
   const [showFinishDialog, setShowFinishDialog] = useState(false)
   const [finishReason, setFinishReason] = useState<string>('')
   const [isManualFinish, setIsManualFinish] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const game = useLiveQuery(
     () => gamesRepository.getById(gameId),
@@ -81,12 +82,33 @@ export function GameDetailPage() {
     navigate({ to: '/games/$gameId/results', params: { gameId } })
   }
 
-  const handleContinuePlaying = (e?: React.MouseEvent) => {
+  const handleContinuePlaying = async (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
     }
     setShowFinishDialog(false)
+
+    // Create a new turn if needed so the user can continue entering scores
+    if (!isManualFinish && gameId) {
+      const turns = await gamesRepository.getTurns(gameId)
+      const players = await gamesRepository.getGamePlayers(gameId)
+
+      if (turns.length > 0 && players.length > 0) {
+        // Check if the last turn has all scores entered
+        const lastTurn = turns[turns.length - 1]
+        const scores = await gamesRepository.getTurnScores(lastTurn.id)
+        const allScoresEntered = players.every(p =>
+          scores.some(s => s.playerId === p.playerId)
+        )
+
+        // If all scores are entered, create the next turn
+        if (allScoresEntered) {
+          await gamesRepository.createTurn(gameId, turns.length)
+          setRefreshKey(k => k + 1)
+        }
+      }
+    }
   }
 
   const handleTurnComplete = async () => {
@@ -153,7 +175,7 @@ export function GameDetailPage() {
 
       {/* Score Grid */}
       <div className="flex-1 overflow-hidden">
-        <ScoreGrid gameId={gameId} onTurnComplete={handleTurnComplete} />
+        <ScoreGrid key={refreshKey} gameId={gameId} onTurnComplete={handleTurnComplete} />
       </div>
 
       {/* Finish dialog */}
