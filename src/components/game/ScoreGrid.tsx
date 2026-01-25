@@ -4,7 +4,7 @@ import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { cn } from '@/lib/cn'
-import { Trophy, Trash2, Plus } from 'lucide-react'
+import { Trophy, Trash2, Plus, Minus } from 'lucide-react'
 import { useConfirm } from '@/hooks/useDialog'
 import type { Player, Turn } from '@/data/db'
 
@@ -192,6 +192,14 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
     }
   }
 
+  const handleToggleSign = () => {
+    setInputValue(prev => {
+      if (prev === '' || prev === '0') return '-'
+      if (prev.startsWith('-')) return prev.slice(1)
+      return '-' + prev
+    })
+  }
+
   const handleAddTurn = async () => {
     const nextIndex = turns.length
     await gamesRepository.createTurn(gameId, nextIndex)
@@ -242,13 +250,13 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
         onCancel={handleCancel}
       />
       <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto relative">
         <table className="w-full border-collapse">
-          <thead className="sticky top-0 bg-card z-10 border-b-2">
-            <tr>
-              <th className="border p-2 text-center bg-muted font-medium w-12">#</th>
+          <thead className="sticky top-0 z-10" style={{ backgroundColor: 'hsl(var(--card))' }}>
+            <tr className="shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              <th className="border p-2 text-center font-medium w-12" style={{ backgroundColor: 'hsl(var(--muted))' }}>#</th>
               {players.map(({ playerId, player }) => (
-                <th key={playerId} className="border p-2 min-w-[80px]">
+                <th key={playerId} className="border p-2 min-w-[80px]" style={{ backgroundColor: 'hsl(var(--card))' }}>
                   <div className="flex flex-col items-center gap-1">
                     <PlayerAvatar
                       type={player.avatarType}
@@ -263,7 +271,7 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
                   </div>
                 </th>
               ))}
-              <th className="border p-2 w-12 bg-muted"></th>
+              <th className="border p-2 w-12" style={{ backgroundColor: 'hsl(var(--muted))' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -286,16 +294,36 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
                       onClick={() => !isEditing && handleCellClick(turn.id, playerId, value)}
                     >
                       {isEditing ? (
-                        <input
-                          type="number"
-                          inputMode="numeric"
-                          className="w-full h-full p-2 text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                          value={inputValue}
-                          onChange={(e) => setInputValue(e.target.value)}
-                          onBlur={handleBlur}
-                          onKeyDown={handleKeyPress}
-                          autoFocus
-                        />
+                        <div className="flex items-center">
+                          <button
+                            type="button"
+                            className="p-1 h-full flex items-center justify-center hover:bg-primary/10 active:bg-primary/20 rounded-l transition-colors"
+                            onMouseDown={(e) => {
+                              e.preventDefault() // Empêche le blur de l'input
+                              handleToggleSign()
+                            }}
+                            tabIndex={-1}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="-?[0-9]*"
+                            className="flex-1 h-full p-2 text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                            value={inputValue}
+                            onChange={(e) => {
+                              // Accepte les chiffres et le signe moins au début
+                              const val = e.target.value
+                              if (val === '' || val === '-' || /^-?\d*$/.test(val)) {
+                                setInputValue(val)
+                              }
+                            }}
+                            onBlur={handleBlur}
+                            onKeyDown={handleKeyPress}
+                            autoFocus
+                          />
+                        </div>
                       ) : (
                         <div className="p-2 min-h-[40px] flex items-center justify-center">
                           {value !== undefined ? value : '-'}
