@@ -22,6 +22,7 @@ export function GameDetailPage() {
   const [finishReason, setFinishReason] = useState<string>('')
   const [isManualFinish, setIsManualFinish] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [isEditingScore, setIsEditingScore] = useState(false)
 
   const game = useLiveQuery(
     () => gamesRepository.getById(gameId),
@@ -143,39 +144,46 @@ export function GameDetailPage() {
 
   return (
     <div className="h-dvh flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b bg-card shadow-sm safe-top">
-        <div className="container mx-auto p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate({ to: '/games' })}
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Retour
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleManualFinish}
-            >
-              <Trophy className="h-4 w-4 mr-1" />
-              Terminer
-            </Button>
+      {/* Header - Masqué pendant l'édition pour maximiser l'espace */}
+      {!isEditingScore && (
+        <div className="border-b bg-card shadow-sm safe-top">
+          <div className="container mx-auto p-4">
+            <div className="flex items-center justify-between mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate({ to: '/games' })}
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Retour
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualFinish}
+              >
+                <Trophy className="h-4 w-4 mr-1" />
+                Terminer
+              </Button>
+            </div>
+            <h1 className="text-xl font-bold">
+              {currentGame.title || currentGame.gameName}
+            </h1>
+            {currentGame.title && (
+              <p className="text-sm text-muted-foreground">{currentGame.gameName}</p>
+            )}
           </div>
-          <h1 className="text-xl font-bold">
-            {currentGame.title || currentGame.gameName}
-          </h1>
-          {currentGame.title && (
-            <p className="text-sm text-muted-foreground">{currentGame.gameName}</p>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Score Grid */}
       <div className="flex-1 overflow-hidden">
-        <ScoreGrid key={refreshKey} gameId={gameId} onTurnComplete={handleTurnComplete} />
+        <ScoreGrid
+          key={refreshKey}
+          gameId={gameId}
+          onTurnComplete={handleTurnComplete}
+          onEditingChange={setIsEditingScore}
+        />
       </div>
 
       {/* Finish dialog */}

@@ -11,6 +11,7 @@ import type { Player, Turn } from '@/data/db'
 interface ScoreGridProps {
   gameId: string
   onTurnComplete?: () => void
+  onEditingChange?: (isEditing: boolean) => void
 }
 
 interface PlayerColumn {
@@ -24,7 +25,7 @@ interface TurnRow {
   scores: Record<string, number>
 }
 
-export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
+export function ScoreGrid({ gameId, onTurnComplete, onEditingChange }: ScoreGridProps) {
   const [players, setPlayers] = useState<PlayerColumn[]>([])
   const [turns, setTurns] = useState<TurnRow[]>([])
   const [totals, setTotals] = useState<Record<string, number>>({})
@@ -39,6 +40,11 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
   useEffect(() => {
     loadGameData()
   }, [gameId])
+
+  // Notifier le parent quand l'édition commence/termine
+  useEffect(() => {
+    onEditingChange?.(editingCell !== null)
+  }, [editingCell, onEditingChange])
 
   const loadGameData = async () => {
     const game = await gamesRepository.getById(gameId)
