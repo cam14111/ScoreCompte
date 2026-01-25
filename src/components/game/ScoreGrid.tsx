@@ -4,7 +4,7 @@ import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { cn } from '@/lib/cn'
-import { Trophy, Trash2, Plus, Minus } from 'lucide-react'
+import { Trophy, Trash2, Minus, ArrowLeft } from 'lucide-react'
 import { useConfirm } from '@/hooks/useDialog'
 import type { Player, Turn } from '@/data/db'
 
@@ -12,6 +12,8 @@ interface ScoreGridProps {
   gameId: string
   onTurnComplete?: () => void
   onEditingChange?: (isEditing: boolean) => void
+  onBack?: () => void
+  onFinish?: () => void
 }
 
 interface PlayerColumn {
@@ -25,7 +27,7 @@ interface TurnRow {
   scores: Record<string, number>
 }
 
-export function ScoreGrid({ gameId, onTurnComplete, onEditingChange }: ScoreGridProps) {
+export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onFinish }: ScoreGridProps) {
   const [players, setPlayers] = useState<PlayerColumn[]>([])
   const [turns, setTurns] = useState<TurnRow[]>([])
   const [totals, setTotals] = useState<Record<string, number>>({})
@@ -204,12 +206,6 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange }: ScoreGrid
       if (prev.startsWith('-')) return prev.slice(1)
       return '-' + prev
     })
-  }
-
-  const handleAddTurn = async () => {
-    const nextIndex = turns.length
-    await gamesRepository.createTurn(gameId, nextIndex)
-    loadGameData()
   }
 
   const handleDeleteTurn = async (turnId: string) => {
@@ -413,16 +409,27 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange }: ScoreGrid
           </table>
         </div>
 
-        {/* Add Turn Button */}
+        {/* Action Buttons */}
         <div className="border-t p-4 bg-card safe-bottom">
-          <Button
-            onClick={handleAddTurn}
-            className="w-full"
-            size="lg"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Ajouter un tour
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="flex-1"
+              size="lg"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Retour
+            </Button>
+            <Button
+              onClick={onFinish}
+              className="flex-1"
+              size="lg"
+            >
+              <Trophy className="h-5 w-5 mr-2" />
+              Terminer
+            </Button>
+          </div>
         </div>
       </div>
     </>

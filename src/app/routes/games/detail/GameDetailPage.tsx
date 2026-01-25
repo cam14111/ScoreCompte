@@ -5,7 +5,7 @@ import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { ScoreGrid } from '@/components/game/ScoreGrid'
 import { Button } from '@/components/ui/Button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog'
-import { ArrowLeft, Trophy } from 'lucide-react'
+import { Trophy } from 'lucide-react'
 import type { Game, Player, Turn } from '@/data/db'
 
 interface GameWithData {
@@ -148,24 +148,6 @@ export function GameDetailPage() {
       {!isEditingScore && (
         <div className="border-b bg-card shadow-sm safe-top">
           <div className="container mx-auto p-4">
-            <div className="flex items-center justify-between mb-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate({ to: '/games' })}
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Retour
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleManualFinish}
-              >
-                <Trophy className="h-4 w-4 mr-1" />
-                Terminer
-              </Button>
-            </div>
             <h1 className="text-xl font-bold">
               {currentGame.title || currentGame.gameName}
             </h1>
@@ -183,6 +165,8 @@ export function GameDetailPage() {
           gameId={gameId}
           onTurnComplete={handleTurnComplete}
           onEditingChange={setIsEditingScore}
+          onBack={() => navigate({ to: '/games' })}
+          onFinish={handleManualFinish}
         />
       </div>
 
