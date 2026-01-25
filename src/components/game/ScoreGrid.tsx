@@ -250,139 +250,173 @@ export function ScoreGrid({ gameId, onTurnComplete }: ScoreGridProps) {
         onCancel={handleCancel}
       />
       <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-auto relative">
-        <table className="w-full border-collapse">
-          <thead className="sticky top-0 z-10" style={{ backgroundColor: 'hsl(var(--card))' }}>
-            <tr className="shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              <th className="border p-2 text-center font-medium w-12" style={{ backgroundColor: 'hsl(var(--muted))' }}>#</th>
-              {players.map(({ playerId, player }) => (
-                <th key={playerId} className="border p-2 min-w-[80px]" style={{ backgroundColor: 'hsl(var(--card))' }}>
-                  <div className="flex flex-col items-center gap-1">
-                    <PlayerAvatar
-                      type={player.avatarType}
-                      value={player.avatarValue}
-                      color={player.color}
-                      name={player.name}
-                      size="sm"
-                    />
-                    <span className="text-xs font-medium truncate max-w-[70px]">
-                      {player.name}
-                    </span>
-                  </div>
-                </th>
+        {/* Fixed Header - Outside scroll container */}
+        <div className="flex-shrink-0 border-b-2 shadow-[0_2px_4px_rgba(0,0,0,0.3)] z-10" style={{ backgroundColor: 'hsl(var(--card))' }}>
+          <table className="w-full border-collapse table-fixed">
+            <colgroup>
+              <col className="w-12" />
+              {players.map(({ playerId }) => (
+                <col key={playerId} style={{ minWidth: '80px' }} />
               ))}
-              <th className="border p-2 w-12" style={{ backgroundColor: 'hsl(var(--muted))' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {turns.map(({ turn, scores }, index) => (
-              <tr key={turn.id} className="hover:bg-accent/50">
-                <td className="border p-2 text-center font-medium text-muted-foreground">
-                  {index + 1}
+              <col className="w-12" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="border p-2 text-center font-medium" style={{ backgroundColor: 'hsl(var(--muted))' }}>#</th>
+                {players.map(({ playerId, player }) => (
+                  <th key={playerId} className="border p-2" style={{ backgroundColor: 'hsl(var(--card))' }}>
+                    <div className="flex flex-col items-center gap-1">
+                      <PlayerAvatar
+                        type={player.avatarType}
+                        value={player.avatarValue}
+                        color={player.color}
+                        name={player.name}
+                        size="sm"
+                      />
+                      <span className="text-xs font-medium truncate max-w-[70px]">
+                        {player.name}
+                      </span>
+                    </div>
+                  </th>
+                ))}
+                <th className="border p-2" style={{ backgroundColor: 'hsl(var(--muted))' }}></th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-auto min-h-0">
+          <table className="w-full border-collapse table-fixed">
+            <colgroup>
+              <col className="w-12" />
+              {players.map(({ playerId }) => (
+                <col key={playerId} style={{ minWidth: '80px' }} />
+              ))}
+              <col className="w-12" />
+            </colgroup>
+            <tbody>
+              {turns.map(({ turn, scores }, index) => (
+                <tr key={turn.id} className="hover:bg-accent/50">
+                  <td className="border p-2 text-center font-medium text-muted-foreground">
+                    {index + 1}
+                  </td>
+                  {players.map(({ playerId }) => {
+                    const isEditing = editingCell?.turnId === turn.id && editingCell?.playerId === playerId
+                    const value = scores[playerId]
+
+                    return (
+                      <td
+                        key={playerId}
+                        className={cn(
+                          'border p-0 text-center cursor-pointer transition-colors',
+                          isEditing && 'bg-primary/20'
+                        )}
+                        onClick={() => !isEditing && handleCellClick(turn.id, playerId, value)}
+                      >
+                        {isEditing ? (
+                          <div className="flex items-center">
+                            <button
+                              type="button"
+                              className="p-1 h-full flex items-center justify-center hover:bg-primary/10 active:bg-primary/20 rounded-l transition-colors"
+                              onMouseDown={(e) => {
+                                e.preventDefault() // Empêche le blur de l'input
+                                handleToggleSign()
+                              }}
+                              tabIndex={-1}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="-?[0-9]*"
+                              className="flex-1 h-full p-2 text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                              value={inputValue}
+                              onChange={(e) => {
+                                // Accepte les chiffres et le signe moins au début
+                                const val = e.target.value
+                                if (val === '' || val === '-' || /^-?\d*$/.test(val)) {
+                                  setInputValue(val)
+                                }
+                              }}
+                              onBlur={handleBlur}
+                              onKeyDown={handleKeyPress}
+                              autoFocus
+                            />
+                          </div>
+                        ) : (
+                          <div className="p-2 min-h-[40px] flex items-center justify-center">
+                            {value !== undefined ? value : '-'}
+                          </div>
+                        )}
+                      </td>
+                    )
+                  })}
+                  <td className="border p-1 bg-muted">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleDeleteTurn(turn.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Fixed Footer (Totals) - Outside scroll container */}
+        <div className="flex-shrink-0 border-t-2" style={{ backgroundColor: 'hsl(var(--card))' }}>
+          <table className="w-full border-collapse table-fixed">
+            <colgroup>
+              <col className="w-12" />
+              {players.map(({ playerId }) => (
+                <col key={playerId} style={{ minWidth: '80px' }} />
+              ))}
+              <col className="w-12" />
+            </colgroup>
+            <tfoot>
+              <tr className="font-bold">
+                <td className="border p-2 text-center bg-muted">
+                  <Trophy className="h-4 w-4 inline" />
                 </td>
                 {players.map(({ playerId }) => {
-                  const isEditing = editingCell?.turnId === turn.id && editingCell?.playerId === playerId
-                  const value = scores[playerId]
-
+                  const isWinner = winnerIds.includes(playerId)
                   return (
                     <td
                       key={playerId}
                       className={cn(
-                        'border p-0 text-center cursor-pointer transition-colors',
-                        isEditing && 'bg-primary/20'
+                        'border p-2 text-center text-lg',
+                        isWinner && 'bg-yellow-500/20'
                       )}
-                      onClick={() => !isEditing && handleCellClick(turn.id, playerId, value)}
                     >
-                      {isEditing ? (
-                        <div className="flex items-center">
-                          <button
-                            type="button"
-                            className="p-1 h-full flex items-center justify-center hover:bg-primary/10 active:bg-primary/20 rounded-l transition-colors"
-                            onMouseDown={(e) => {
-                              e.preventDefault() // Empêche le blur de l'input
-                              handleToggleSign()
-                            }}
-                            tabIndex={-1}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            pattern="-?[0-9]*"
-                            className="flex-1 h-full p-2 text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                            value={inputValue}
-                            onChange={(e) => {
-                              // Accepte les chiffres et le signe moins au début
-                              const val = e.target.value
-                              if (val === '' || val === '-' || /^-?\d*$/.test(val)) {
-                                setInputValue(val)
-                              }
-                            }}
-                            onBlur={handleBlur}
-                            onKeyDown={handleKeyPress}
-                            autoFocus
-                          />
-                        </div>
-                      ) : (
-                        <div className="p-2 min-h-[40px] flex items-center justify-center">
-                          {value !== undefined ? value : '-'}
-                        </div>
-                      )}
+                      <div className="flex flex-col items-center gap-1">
+                        {isWinner && <Trophy className="h-4 w-4 text-yellow-500" />}
+                        <span>{totals[playerId] || 0}</span>
+                      </div>
                     </td>
                   )
                 })}
-                <td className="border p-1 bg-muted">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleDeleteTurn(turn.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </td>
+                <td className="border bg-muted"></td>
               </tr>
-            ))}
-          </tbody>
-          <tfoot className="sticky bottom-0 bg-card border-t-2">
-            <tr className="font-bold">
-              <td className="border p-2 text-center bg-muted">
-                <Trophy className="h-4 w-4 inline" />
-              </td>
-              {players.map(({ playerId }) => {
-                const isWinner = winnerIds.includes(playerId)
-                return (
-                  <td
-                    key={playerId}
-                    className={cn(
-                      'border p-2 text-center text-lg',
-                      isWinner && 'bg-yellow-500/20'
-                    )}
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      {isWinner && <Trophy className="h-4 w-4 text-yellow-500" />}
-                      <span>{totals[playerId] || 0}</span>
-                    </div>
-                  </td>
-                )
-              })}
-              <td className="border bg-muted"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+            </tfoot>
+          </table>
+        </div>
 
-      {/* Add Turn Button */}
-      <div className="border-t p-4 bg-card safe-bottom">
-        <Button
-          onClick={handleAddTurn}
-          className="w-full"
-          size="lg"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Ajouter un tour
-        </Button>
+        {/* Add Turn Button */}
+        <div className="border-t p-4 bg-card safe-bottom">
+          <Button
+            onClick={handleAddTurn}
+            className="w-full"
+            size="lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Ajouter un tour
+          </Button>
         </div>
       </div>
     </>
