@@ -58,8 +58,8 @@ export const GameCard = memo(function GameCard({ game, players, turnCount = 0, w
         <Link to={isFinished ? '/games/$gameId/results' : '/games/$gameId'} params={{ gameId: game.id }}>
         <Card className="cursor-pointer hover:bg-accent/50 transition-colors touch-manipulation">
           <CardHeader>
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <div className="flex-1 min-w-0">
                 <CardTitle className="text-lg">
                   {game.title || game.gameName}
                 </CardTitle>
