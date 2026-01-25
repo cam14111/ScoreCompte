@@ -142,7 +142,7 @@ export function GameDetailPage() {
   const { game: currentGame } = gameData
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-dvh flex flex-col bg-background">
       {/* Header */}
       <div className="border-b bg-card shadow-sm safe-top">
         <div className="container mx-auto p-4">
