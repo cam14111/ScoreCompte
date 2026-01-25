@@ -229,14 +229,12 @@ export const gamesRepository = {
     }
 
     // Check score limit
+    // For both INVERTED and STANDARD modes, the game ends when any player reaches the score limit
+    // The scoring mode only affects who wins (lowest vs highest), not when the game ends
     if (game.scoreLimit) {
       const totals = await this.calculateTotals(gameId)
       const hasReachedLimit = Object.values(totals).some(total => {
-        if (game.scoringMode === 'INVERTED') {
-          return total <= game.scoreLimit!
-        } else {
-          return total >= game.scoreLimit!
-        }
+        return total >= game.scoreLimit!
       })
       if (hasReachedLimit) {
         return { shouldEnd: true, reason: 'score_limit' }
