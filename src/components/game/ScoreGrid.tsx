@@ -96,6 +96,13 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
   const handleSaveScore = async (autoAdvance: boolean = false) => {
     if (!editingCell) return
 
+    // Si aucune valeur n'est saisie, ne pas sauvegarder et fermer l'édition
+    if (inputValue.trim() === '') {
+      setEditingCell(null)
+      setInputValue('')
+      return
+    }
+
     const points = parseInt(inputValue) || 0
     const currentTurnId = editingCell.turnId
     const currentPlayerId = editingCell.playerId
