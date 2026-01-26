@@ -39,6 +39,24 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
   // Ref pour gérer la transition tactile entre cellules
   const nextCellToEditRef = useRef<{ turnId: string; playerId: string; value?: number } | null>(null)
 
+  // Refs for scroll synchronization
+  const headerRef = useRef<HTMLDivElement>(null)
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const footerRef = useRef<HTMLDivElement>(null)
+
+  // Handle synchronized horizontal scrolling
+  const handleBodyScroll = () => {
+    if (bodyRef.current) {
+      const scrollLeft = bodyRef.current.scrollLeft
+      if (headerRef.current) {
+        headerRef.current.scrollLeft = scrollLeft
+      }
+      if (footerRef.current) {
+        footerRef.current.scrollLeft = scrollLeft
+      }
+    }
+  }
+
   useEffect(() => {
     loadGameData()
   }, [gameId])
@@ -252,8 +270,12 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
         onCancel={handleCancel}
       />
       <div className="h-full flex flex-col">
-        {/* Fixed Header - Outside scroll container */}
-        <div className="flex-shrink-0 border-b-2 shadow-[0_2px_4px_rgba(0,0,0,0.3)] z-10" style={{ backgroundColor: 'hsl(var(--card))' }}>
+        {/* Fixed Header - Horizontally scrollable, synced with body */}
+        <div
+          ref={headerRef}
+          className="flex-shrink-0 border-b-2 shadow-[0_2px_4px_rgba(0,0,0,0.3)] z-10 overflow-x-auto scrollbar-hide"
+          style={{ backgroundColor: 'hsl(var(--card))' }}
+        >
           <table className="w-full border-collapse table-fixed">
             <colgroup>
               <col className="w-12" />
@@ -287,8 +309,12 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
           </table>
         </div>
 
-        {/* Scrollable Body */}
-        <div className="flex-1 overflow-auto min-h-0">
+        {/* Scrollable Body - Main scroll container */}
+        <div
+          ref={bodyRef}
+          className="flex-1 overflow-auto min-h-0"
+          onScroll={handleBodyScroll}
+        >
           <table className="w-full border-collapse table-fixed">
             <colgroup>
               <col className="w-12" />
@@ -371,8 +397,12 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
           </table>
         </div>
 
-        {/* Fixed Footer (Totals) - Outside scroll container */}
-        <div className="flex-shrink-0 border-t-2" style={{ backgroundColor: 'hsl(var(--card))' }}>
+        {/* Fixed Footer (Totals) - Horizontally scrollable, synced with body */}
+        <div
+          ref={footerRef}
+          className="flex-shrink-0 border-t-2 overflow-x-auto scrollbar-hide"
+          style={{ backgroundColor: 'hsl(var(--card))' }}
+        >
           <table className="w-full border-collapse table-fixed">
             <colgroup>
               <col className="w-12" />
