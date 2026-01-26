@@ -39,24 +39,6 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
   // Ref pour gérer la transition tactile entre cellules
   const nextCellToEditRef = useRef<{ turnId: string; playerId: string; value?: number } | null>(null)
 
-  // Refs for scroll synchronization
-  const headerRef = useRef<HTMLDivElement>(null)
-  const bodyRef = useRef<HTMLDivElement>(null)
-  const footerRef = useRef<HTMLDivElement>(null)
-
-  // Handle synchronized horizontal scrolling
-  const handleBodyScroll = () => {
-    if (bodyRef.current) {
-      const scrollLeft = bodyRef.current.scrollLeft
-      if (headerRef.current) {
-        headerRef.current.scrollLeft = scrollLeft
-      }
-      if (footerRef.current) {
-        footerRef.current.scrollLeft = scrollLeft
-      }
-    }
-  }
-
   useEffect(() => {
     loadGameData()
   }, [gameId])
@@ -270,25 +252,31 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
         onCancel={handleCancel}
       />
       <div className="h-full flex flex-col">
-        {/* Fixed Header - Horizontally scrollable, synced with body */}
-        <div
-          ref={headerRef}
-          className="flex-shrink-0 border-b-2 shadow-[0_2px_4px_rgba(0,0,0,0.3)] z-10 overflow-x-auto scrollbar-hide"
-          style={{ backgroundColor: 'hsl(var(--card))' }}
-        >
-          <table className="w-full border-collapse table-fixed">
+        {/* Single scroll container for the entire table */}
+        <div className="flex-1 overflow-auto min-h-0">
+          <table className="w-full border-collapse" style={{ minWidth: `${48 + players.length * 80 + 48}px` }}>
             <colgroup>
-              <col className="w-12" />
+              <col style={{ width: '48px', minWidth: '48px' }} />
               {players.map(({ playerId }) => (
-                <col key={playerId} style={{ minWidth: '80px' }} />
+                <col key={playerId} style={{ width: '80px', minWidth: '80px' }} />
               ))}
-              <col className="w-12" />
+              <col style={{ width: '48px', minWidth: '48px' }} />
             </colgroup>
-            <thead>
+            {/* Sticky Header */}
+            <thead className="sticky top-0 z-10">
               <tr>
-                <th className="border p-2 text-center font-medium" style={{ backgroundColor: 'hsl(var(--muted))' }}>#</th>
+                <th
+                  className="border p-2 text-center font-medium"
+                  style={{ backgroundColor: 'hsl(var(--muted))' }}
+                >
+                  #
+                </th>
                 {players.map(({ playerId, player }) => (
-                  <th key={playerId} className="border p-2" style={{ backgroundColor: 'hsl(var(--card))' }}>
+                  <th
+                    key={playerId}
+                    className="border p-2"
+                    style={{ backgroundColor: 'hsl(var(--card))' }}
+                  >
                     <div className="flex flex-col items-center gap-1">
                       <PlayerAvatar
                         type={player.avatarType}
@@ -303,30 +291,20 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                     </div>
                   </th>
                 ))}
-                <th className="border p-2" style={{ backgroundColor: 'hsl(var(--muted))' }}></th>
+                <th
+                  className="border p-2"
+                  style={{ backgroundColor: 'hsl(var(--muted))' }}
+                ></th>
               </tr>
             </thead>
-          </table>
-        </div>
-
-        {/* Scrollable Body - Main scroll container */}
-        <div
-          ref={bodyRef}
-          className="flex-1 overflow-auto min-h-0"
-          onScroll={handleBodyScroll}
-        >
-          <table className="w-full border-collapse table-fixed">
-            <colgroup>
-              <col className="w-12" />
-              {players.map(({ playerId }) => (
-                <col key={playerId} style={{ minWidth: '80px' }} />
-              ))}
-              <col className="w-12" />
-            </colgroup>
+            {/* Score Rows */}
             <tbody>
               {turns.map(({ turn, scores }, index) => (
                 <tr key={turn.id} className="hover:bg-accent/50">
-                  <td className="border p-2 text-center font-medium text-muted-foreground">
+                  <td
+                    className="border p-2 text-center font-medium text-muted-foreground"
+                    style={{ backgroundColor: 'hsl(var(--card))' }}
+                  >
                     {index + 1}
                   </td>
                   {players.map(({ playerId }) => {
@@ -340,6 +318,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                           'border p-0 text-center cursor-pointer transition-colors',
                           isEditing && 'bg-primary/20'
                         )}
+                        style={{ backgroundColor: isEditing ? undefined : 'hsl(var(--card))' }}
                         onClick={() => !isEditing && handleCellClick(turn.id, playerId, value)}
                       >
                         {isEditing ? (
@@ -381,7 +360,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                       </td>
                     )
                   })}
-                  <td className="border p-1 bg-muted">
+                  <td className="border p-1" style={{ backgroundColor: 'hsl(var(--muted))' }}>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -394,26 +373,13 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
-
-        {/* Fixed Footer (Totals) - Horizontally scrollable, synced with body */}
-        <div
-          ref={footerRef}
-          className="flex-shrink-0 border-t-2 overflow-x-auto scrollbar-hide"
-          style={{ backgroundColor: 'hsl(var(--card))' }}
-        >
-          <table className="w-full border-collapse table-fixed">
-            <colgroup>
-              <col className="w-12" />
-              {players.map(({ playerId }) => (
-                <col key={playerId} style={{ minWidth: '80px' }} />
-              ))}
-              <col className="w-12" />
-            </colgroup>
-            <tfoot>
+            {/* Sticky Footer */}
+            <tfoot className="sticky bottom-0 z-10">
               <tr className="font-bold">
-                <td className="border p-2 text-center bg-muted">
+                <td
+                  className="border p-2 text-center"
+                  style={{ backgroundColor: 'hsl(var(--muted))' }}
+                >
                   <Trophy className="h-4 w-4 inline" />
                 </td>
                 {players.map(({ playerId }) => {
@@ -425,6 +391,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                         'border p-2 text-center text-lg',
                         isWinner && 'bg-yellow-500/20'
                       )}
+                      style={{ backgroundColor: isWinner ? undefined : 'hsl(var(--card))' }}
                     >
                       <div className="flex flex-col items-center gap-1">
                         {isWinner && <Trophy className="h-4 w-4 text-yellow-500" />}
@@ -433,7 +400,10 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                     </td>
                   )
                 })}
-                <td className="border bg-muted"></td>
+                <td
+                  className="border"
+                  style={{ backgroundColor: 'hsl(var(--muted))' }}
+                ></td>
               </tr>
             </tfoot>
           </table>
