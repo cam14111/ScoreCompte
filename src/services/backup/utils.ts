@@ -4,6 +4,7 @@
 
 import pako from 'pako';
 import { BackupContent, BackupMetadata, BACKUP_SCHEMA_VERSION } from './types';
+import packageJson from '../../../package.json';
 
 /**
  * Générer un ID unique pour l'appareil
@@ -26,7 +27,7 @@ export function getDeviceId(): string {
  * Obtenir la version de l'application depuis package.json
  */
 export function getAppVersion(): string {
-  return '1.7.1'; // À synchroniser avec package.json
+  return packageJson.version;
 }
 
 /**

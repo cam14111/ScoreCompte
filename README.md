@@ -2,13 +2,34 @@
 
 Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
-![Version](https://img.shields.io/badge/version-1.8.0-blue)
+![Version](https://img.shields.io/badge/version-2.3.0-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
 ![Offline](https://img.shields.io/badge/offline-100%25-brightgreen)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-success)
 ![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 
-## 🆕 Nouveautés Version 1.8.x
+## 🆕 Nouveautés Version 2.x
+
+### Gestion des mises à jour (2.3.0) 🔄
+- **Détection intelligente des mises à jour** :
+  - Détecte automatiquement quand une nouvelle version est disponible
+  - Remplace l'écran d'erreur "Failed to fetch dynamically imported module" par un message convivial
+  - Modal d'avertissement invitant l'utilisateur à recharger l'application
+  - Rechargement automatique en un clic pour charger la nouvelle version
+- **Correction de la synchronisation de version** :
+  - La version de l'application dans les backups est maintenant synchronisée avec package.json
+  - Plus de version hardcodée obsolète
+
+### Navigation intelligente sur validation (2.2.0) 🎯
+- Navigation automatique vers les cellules de scores non remplies lors de la validation
+
+### Améliorations diverses (2.1.0) 🔧
+- Corrections de bugs et améliorations de stabilité
+
+### Score zéro (2.0.0) ✅
+- Support de la saisie de score zéro (0) dans les cellules
+
+## Historique Version 1.8.x
 
 ### Sauvegarde Google Drive (1.8.0) ☁️
 - **Connexion au compte Google** :
@@ -402,10 +423,10 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 
 ---
 
-**Version actuelle** : 1.8.0
-**Dernière mise à jour** : 16 janvier 2026
+**Version actuelle** : 2.3.0
+**Dernière mise à jour** : 26 janvier 2026
 **Status** : ✅ Production Ready (Feature Complete)
 **Déploiement** : GitHub Pages
 **Stockage** : Local (IndexedDB) + Cloud (Google Drive)
 **Bundle** : ~250 KB (vendors gzippés) + routes lazy-loadées (2-10 KB)
-**Nouveautés** : Sauvegarde automatique Google Drive avec connexion au compte Google
+**Nouveautés** : Gestion intelligente des mises à jour de version
