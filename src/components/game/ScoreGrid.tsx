@@ -130,23 +130,39 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
 
     // === Auto-avancement uniquement sur Enter ===
 
-    // Vérifier si tous les scores du tour actuel sont maintenant saisis
+    // Récupérer les scores actuels du tour après sauvegarde
     const currentTurnScores = await gamesRepository.getTurnScores(currentTurnId)
-    const allScoresEntered = currentTurnScores.length === players.length
+    const filledPlayerIds = new Set(currentTurnScores.map(s => s.playerId))
+    const allScoresEntered = filledPlayerIds.size === players.length
 
-    let nextTurnId: string
-    let nextPlayerId: string
+    let nextTurnId: string | undefined
+    let nextPlayerId: string | undefined
     let nextValue: number | undefined
 
-    // S'il y a un joueur suivant dans le même tour
-    if (currentPlayerIndex < players.length - 1) {
-      const nextPlayer = players[currentPlayerIndex + 1]
-      nextTurnId = currentTurnId
-      nextPlayerId = nextPlayer.playerId
-      nextValue = turns[currentTurnIndex].scores[nextPlayerId]
+    // Chercher le prochain score non renseigné (après le joueur actuel)
+    for (let i = currentPlayerIndex + 1; i < players.length; i++) {
+      if (!filledPlayerIds.has(players[i].playerId)) {
+        nextTurnId = currentTurnId
+        nextPlayerId = players[i].playerId
+        nextValue = undefined
+        break
+      }
     }
-    // Sinon, si tous les scores sont saisis, vérifier les conditions puis créer le tour suivant
-    else if (allScoresEntered) {
+
+    // Si pas trouvé, chercher un score non renseigné avant le joueur actuel
+    if (!nextPlayerId) {
+      for (let i = 0; i < currentPlayerIndex; i++) {
+        if (!filledPlayerIds.has(players[i].playerId)) {
+          nextTurnId = currentTurnId
+          nextPlayerId = players[i].playerId
+          nextValue = undefined
+          break
+        }
+      }
+    }
+
+    // Si tous les scores du tour sont renseignés, créer le tour suivant
+    if (!nextPlayerId && allScoresEntered) {
       // Recharger d'abord pour avoir les données à jour
       await loadGameData()
 
@@ -172,16 +188,16 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
       // Recharger à nouveau pour obtenir le nouveau tour
       await loadGameData()
     }
-    // Sinon, rester sur le dernier joueur (tour incomplet)
-    else {
-      nextTurnId = currentTurnId
-      nextPlayerId = players[0].playerId
-      nextValue = turns[currentTurnIndex].scores[nextPlayerId]
-    }
 
-    // Mettre le focus sur la cellule suivante
-    setEditingCell({ turnId: nextTurnId, playerId: nextPlayerId })
-    setInputValue(nextValue !== undefined ? String(nextValue) : '')
+    // Si on a trouvé une cellule suivante, mettre le focus dessus
+    if (nextTurnId && nextPlayerId) {
+      setEditingCell({ turnId: nextTurnId, playerId: nextPlayerId })
+      setInputValue(nextValue !== undefined ? String(nextValue) : '')
+    } else {
+      // Cas imprévu : fermer l'édition
+      setEditingCell(null)
+      setInputValue('')
+    }
   }
 
   const handleBlur = async () => {
