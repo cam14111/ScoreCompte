@@ -9,7 +9,11 @@ import { initializePredefinedModels } from './data/initialization'
 import { backupManager } from './services/backup/BackupManager'
 import { backupRepository } from './services/backup/BackupRepository'
 import { googleAuthService } from './services/backup/GoogleAuthService'
+import { initVersionUpdateHandler } from './lib/versionUpdateHandler'
 import './index.css'
+
+// Initialize version update handler early to catch dynamic import errors
+initVersionUpdateHandler()
 
 // Initialize settings (theme, contrast)
 settingsStore.init()
