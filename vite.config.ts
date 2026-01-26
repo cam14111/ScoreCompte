@@ -15,7 +15,7 @@ export default defineConfig({
       brotliSize: true
     }),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: 'Score Counter',
