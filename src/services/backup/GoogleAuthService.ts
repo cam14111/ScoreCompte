@@ -13,6 +13,7 @@ import {
 
 // Configuration OAuth
 const GOOGLE_CLIENT_ID = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = (import.meta as any).env?.VITE_GOOGLE_CLIENT_SECRET || '';
 const GOOGLE_REDIRECT_URI =
   (import.meta as any).env?.VITE_GOOGLE_REDIRECT_URI || window.location.origin;
 
@@ -384,6 +385,7 @@ export class GoogleAuthService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: GOOGLE_CLIENT_ID,
+        ...(GOOGLE_CLIENT_SECRET ? { client_secret: GOOGLE_CLIENT_SECRET } : {}),
         code,
         code_verifier: this.codeVerifier,
         grant_type: 'authorization_code',
@@ -457,6 +459,7 @@ export class GoogleAuthService {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: GOOGLE_CLIENT_ID,
+        ...(GOOGLE_CLIENT_SECRET ? { client_secret: GOOGLE_CLIENT_SECRET } : {}),
         refresh_token: refreshToken,
         grant_type: 'refresh_token',
       }),
