@@ -23,8 +23,19 @@ initializePredefinedModels()
 
 // Initialize backup system if user is authenticated
 const config = backupRepository.getConfig()
-if (config.enabled && googleAuthService.isAuthenticated()) {
-  backupManager.start()
+if (config.enabled) {
+  if (googleAuthService.isAuthenticated()) {
+    backupManager.start()
+  } else {
+    // Tenter un rafraîchissement silencieux du token au démarrage
+    googleAuthService.tryAutoRefresh().then(() => {
+      if (googleAuthService.isAuthenticated()) {
+        backupManager.start()
+      }
+    }).catch(() => {
+      // Échec silencieux — l'utilisateur devra se reconnecter manuellement
+    })
+  }
 }
 
 // Register service worker for PWA

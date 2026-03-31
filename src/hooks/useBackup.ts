@@ -256,12 +256,21 @@ export function useRestoreBackup() {
  */
 export function useBackupInitialization() {
   useEffect(() => {
-    const config = backupRepository.getConfig();
+    const init = async () => {
+      const config = backupRepository.getConfig();
+      if (!config.enabled) return;
 
-    if (config.enabled && googleAuthService.isAuthenticated()) {
-      console.log('Initialisation du système de sauvegarde...');
-      backupManager.start();
-    }
+      if (!googleAuthService.isAuthenticated()) {
+        await googleAuthService.tryAutoRefresh().catch(() => {});
+      }
+
+      if (googleAuthService.isAuthenticated()) {
+        console.log('Initialisation du système de sauvegarde...');
+        backupManager.start();
+      }
+    };
+
+    init();
 
     return () => {
       backupManager.stop();
