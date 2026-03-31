@@ -64,6 +64,7 @@ export interface DriveBackupFile {
 export interface GoogleAuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
+  refreshToken: string | null; // Refresh token pour renouvellement silencieux
   expiresAt: number | null; // Timestamp d'expiration
   userEmail: string | null;
   userName: string | null;
