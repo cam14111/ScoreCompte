@@ -34,7 +34,6 @@ jobs:
       - name: Build
         env:
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
-          VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
           VITE_GOOGLE_REDIRECT_URI: https://cam14111.github.io/ScoreCompte/
         run: npm run build
 
