@@ -1,7 +1,7 @@
 /**
  * Service d'authentification Google OAuth 2.0 (côté client)
- * Utilise l'Implicit Flow avec rafraîchissement silencieux par iframe cachée
- * pour maintenir une connexion persistante sans client_secret.
+ * Utilise l'Implicit Flow avec rafraîchissement silencieux par popup
+ * (prompt=none) pour maintenir une connexion persistante sans client_secret.
  */
 
 import {
@@ -27,8 +27,6 @@ const STORAGE_KEYS = {
 
 // Rafraîchir le token 5 minutes avant expiration
 const REFRESH_MARGIN_MS = 5 * 60 * 1000;
-// Timeout pour le silent refresh via iframe (10 secondes)
-const SILENT_REFRESH_TIMEOUT_MS = 10000;
 
 export class GoogleAuthService {
   private static instance: GoogleAuthService;
@@ -123,13 +121,11 @@ export class GoogleAuthService {
       const timeUntilExpiry = this.authState.expiresAt - Date.now();
 
       if (timeUntilExpiry <= 0) {
-        // Token expiré — tenter un silent refresh
         this.silentRefresh().catch(() => {
           console.log('Token Google Drive expiré, silent refresh échoué');
           this.clearAuthState();
         });
       } else if (timeUntilExpiry <= REFRESH_MARGIN_MS) {
-        // Rafraîchir proactivement 5 min avant expiration
         this.silentRefresh().catch(() => {
           // On réessaiera au prochain cycle
         });
@@ -178,7 +174,7 @@ export class GoogleAuthService {
     return this.authState.accessToken;
   }
 
-  // ─── Sign In (Implicit Flow via popup) ────────────────────────────────
+  // ─── Sign In (Implicit Flow via popup avec consent) ───────────────────
 
   public async signIn(): Promise<void> {
     if (!GOOGLE_CLIENT_ID) {
@@ -218,10 +214,31 @@ export class GoogleAuthService {
         );
       }
 
-      await this.waitForOAuthCallback(popup);
+      const token = await this.pollPopupForToken(popup, 300000);
 
-      // Marquer que l'utilisateur a déjà donné son consentement
-      // pour permettre le silent refresh à l'avenir
+      // Récupérer les infos utilisateur
+      let userEmail: string | null = null;
+      let userName: string | null = null;
+      try {
+        const info = await this.fetchUserInfo(token.accessToken);
+        userEmail = info.email;
+        userName = info.name;
+      } catch {
+        // Continuer même sans les infos utilisateur
+      }
+
+      this.authState = {
+        isAuthenticated: true,
+        accessToken: token.accessToken,
+        refreshToken: null,
+        expiresAt: token.expiresAt,
+        userEmail,
+        userName,
+      };
+      this.saveAuthStateToStorage();
+      this.notifyListeners();
+
+      // Marquer le consentement pour permettre le silent refresh
       localStorage.setItem(STORAGE_KEYS.HAS_GRANTED_CONSENT, 'true');
     } catch (error) {
       console.error('Erreur d\'authentification Google:', error);
@@ -236,9 +253,63 @@ export class GoogleAuthService {
     }
   }
 
-  // ─── OAuth Callback (Implicit Flow — hash fragment) ───────────────────
+  // ─── Silent Refresh (popup avec prompt=none) ──────────────────────────
 
-  private waitForOAuthCallback(popup: Window): Promise<void> {
+  private async silentRefresh(): Promise<void> {
+    // Garde de concurrence
+    if (this.silentRefreshPromise) return this.silentRefreshPromise;
+
+    this.silentRefreshPromise = this.doSilentRefresh().finally(() => {
+      this.silentRefreshPromise = null;
+    });
+
+    return this.silentRefreshPromise;
+  }
+
+  private async doSilentRefresh(): Promise<void> {
+    const params = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      redirect_uri: GOOGLE_REDIRECT_URI,
+      response_type: 'token',
+      scope: GOOGLE_DRIVE_SCOPES.join(' '),
+      state: this.generateState(),
+      prompt: 'none',
+    });
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+
+    // Popup minimale positionnée hors de la vue
+    const popup = window.open(
+      authUrl,
+      'Google Silent Refresh',
+      'width=1,height=1,left=-100,top=-100'
+    );
+
+    if (!popup) {
+      throw new BackupError(
+        BackupErrorCode.TOKEN_EXPIRED,
+        'Popup de rafraîchissement bloquée'
+      );
+    }
+
+    const token = await this.pollPopupForToken(popup, 10000);
+
+    this.authState = {
+      ...this.authState,
+      isAuthenticated: true,
+      accessToken: token.accessToken,
+      expiresAt: token.expiresAt,
+    };
+    this.saveAuthStateToStorage();
+    this.notifyListeners();
+  }
+
+  // ─── Méthode commune : polling du popup pour extraire le token ────────
+
+  private pollPopupForToken(
+    popup: Window,
+    timeoutMs: number
+  ): Promise<{ accessToken: string; expiresAt: number }> {
     return new Promise((resolve, reject) => {
       const checkInterval = setInterval(() => {
         try {
@@ -294,41 +365,13 @@ export class GoogleAuthService {
             }
 
             const expiresAt = Date.now() + parseInt(expiresIn, 10) * 1000;
-
-            this.fetchUserInfo(accessToken)
-              .then(({ email, name }) => {
-                this.authState = {
-                  isAuthenticated: true,
-                  accessToken,
-                  refreshToken: null,
-                  expiresAt,
-                  userEmail: email,
-                  userName: name,
-                };
-                this.saveAuthStateToStorage();
-                this.notifyListeners();
-                resolve();
-              })
-              .catch(() => {
-                this.authState = {
-                  isAuthenticated: true,
-                  accessToken,
-                  refreshToken: null,
-                  expiresAt,
-                  userEmail: null,
-                  userName: null,
-                };
-                this.saveAuthStateToStorage();
-                this.notifyListeners();
-                resolve();
-              });
+            resolve({ accessToken, expiresAt });
           }
         } catch {
           // Erreur cross-origin, continuer à attendre
         }
       }, 500);
 
-      // Timeout après 5 minutes
       setTimeout(() => {
         clearInterval(checkInterval);
         if (!popup.closed) {
@@ -336,131 +379,19 @@ export class GoogleAuthService {
         }
         reject(
           new BackupError(
-            BackupErrorCode.AUTH_FAILED,
+            BackupErrorCode.TOKEN_EXPIRED,
             'Timeout d\'authentification'
           )
         );
-      }, 300000);
+      }, timeoutMs);
     });
   }
 
-  // ─── Silent Refresh (via iframe cachée) ───────────────────────────────
+  // ─── Auto Refresh au démarrage ───────────────────────────────────────
 
-  /**
-   * Rafraîchir le token silencieusement via une iframe cachée.
-   * Fonctionne tant que l'utilisateur a une session Google active
-   * et a déjà donné son consentement.
-   */
-  private async silentRefresh(): Promise<void> {
-    // Garde de concurrence
-    if (this.silentRefreshPromise) return this.silentRefreshPromise;
-
-    this.silentRefreshPromise = this.doSilentRefresh().finally(() => {
-      this.silentRefreshPromise = null;
-    });
-
-    return this.silentRefreshPromise;
-  }
-
-  private doSilentRefresh(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const params = new URLSearchParams({
-        client_id: GOOGLE_CLIENT_ID,
-        redirect_uri: GOOGLE_REDIRECT_URI,
-        response_type: 'token',
-        scope: GOOGLE_DRIVE_SCOPES.join(' '),
-        state: this.generateState(),
-        prompt: 'none', // Pas d'interaction utilisateur
-      });
-
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.setAttribute('aria-hidden', 'true');
-
-      const cleanup = () => {
-        if (iframe.parentNode) {
-          iframe.parentNode.removeChild(iframe);
-        }
-      };
-
-      const timeout = setTimeout(() => {
-        cleanup();
-        reject(new BackupError(
-          BackupErrorCode.TOKEN_EXPIRED,
-          'Silent refresh timeout'
-        ));
-      }, SILENT_REFRESH_TIMEOUT_MS);
-
-      iframe.addEventListener('load', () => {
-        try {
-          const iframeUrl = iframe.contentWindow?.location.href;
-          if (!iframeUrl || !iframeUrl.startsWith(GOOGLE_REDIRECT_URI)) {
-            clearTimeout(timeout);
-            cleanup();
-            reject(new BackupError(
-              BackupErrorCode.TOKEN_EXPIRED,
-              'Silent refresh: redirection inattendue'
-            ));
-            return;
-          }
-
-          const hashParams = new URLSearchParams(
-            iframeUrl.split('#')[1] || ''
-          );
-          const accessToken = hashParams.get('access_token');
-          const expiresIn = hashParams.get('expires_in');
-          const error = hashParams.get('error');
-
-          clearTimeout(timeout);
-          cleanup();
-
-          if (error || !accessToken || !expiresIn) {
-            reject(new BackupError(
-              BackupErrorCode.TOKEN_EXPIRED,
-              `Silent refresh échoué: ${error || 'pas de token'}`
-            ));
-            return;
-          }
-
-          const expiresAt = Date.now() + parseInt(expiresIn, 10) * 1000;
-
-          this.authState = {
-            ...this.authState,
-            isAuthenticated: true,
-            accessToken,
-            expiresAt,
-          };
-          this.saveAuthStateToStorage();
-          this.notifyListeners();
-          resolve();
-        } catch {
-          // Cross-origin error = Google n'a pas redirigé vers notre domaine
-          // (session Google expirée ou consentement nécessaire)
-          clearTimeout(timeout);
-          cleanup();
-          reject(new BackupError(
-            BackupErrorCode.TOKEN_EXPIRED,
-            'Silent refresh échoué: session Google inactive'
-          ));
-        }
-      });
-
-      document.body.appendChild(iframe);
-      iframe.src = authUrl;
-    });
-  }
-
-  /**
-   * Tenter un rafraîchissement silencieux au démarrage de l'app.
-   * Ne lance pas d'erreur visible — échoue silencieusement si
-   * la session Google n'est plus active.
-   */
   public async tryAutoRefresh(): Promise<void> {
     if (this.isAuthenticated()) return;
 
-    // Ne tenter que si l'utilisateur avait déjà donné son consentement
     const hasConsented = localStorage.getItem(STORAGE_KEYS.HAS_GRANTED_CONSENT);
     if (!hasConsented) return;
 
@@ -471,7 +402,6 @@ export class GoogleAuthService {
 
   public async ensureValidToken(): Promise<void> {
     if (this.isAuthenticated()) {
-      // Rafraîchir proactivement si proche de l'expiration
       if (
         this.authState.expiresAt &&
         this.authState.expiresAt - Date.now() < 60000
@@ -548,7 +478,6 @@ export class GoogleAuthService {
       }
     }
 
-    // Supprimer aussi le flag de consentement
     localStorage.removeItem(STORAGE_KEYS.HAS_GRANTED_CONSENT);
     this.clearAuthState();
   }
