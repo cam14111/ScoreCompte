@@ -160,7 +160,7 @@ export const exportToCSV = async (): Promise<string> => {
     })
   }
 
-  return rows.map(row => row.map(cell => `"${cell}"`).join(';')).join('\n')
+  return rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(';')).join('\n')
 }
 
 export const downloadCSV = (csv: string, filename?: string) => {
@@ -176,11 +176,45 @@ export const downloadCSV = (csv: string, filename?: string) => {
   URL.revokeObjectURL(url)
 }
 
+// Validation structurelle : rejette les fichiers qui ne proviennent pas de l'app
+// avant d'écrire quoi que ce soit en base (surtout en mode "replace").
+export function validateImportData(data: unknown): { valid: boolean; error?: string } {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+    return { valid: false, error: 'Le fichier ne contient pas un export valide.' }
+  }
+  const d = data as Record<string, unknown>
+  const tables = ['players', 'gameModels', 'games', 'gamePlayers', 'turns', 'turnScores'] as const
+
+  const hasAtLeastOneTable = tables.some(t => d[t] !== undefined)
+  if (!hasAtLeastOneTable) {
+    return { valid: false, error: 'Aucune donnée reconnue dans ce fichier (joueurs, parties, modèles…).' }
+  }
+
+  for (const table of tables) {
+    const rows = d[table]
+    if (rows === undefined) continue
+    if (!Array.isArray(rows)) {
+      return { valid: false, error: `Le champ "${table}" doit être une liste.` }
+    }
+    for (const row of rows) {
+      if (typeof row !== 'object' || row === null || typeof (row as any).id !== 'string' || (row as any).id === '') {
+        return { valid: false, error: `Un enregistrement de "${table}" est invalide (identifiant manquant).` }
+      }
+    }
+  }
+  return { valid: true }
+}
+
 export const importFromJSON = async (
   data: ExportData,
   mode: 'merge' | 'replace' = 'merge'
 ): Promise<{ success: boolean; message: string }> => {
   try {
+    const validation = validateImportData(data)
+    if (!validation.valid) {
+      return { success: false, message: validation.error || 'Fichier invalide.' }
+    }
+
     if (mode === 'replace') {
       // Clear all data first
       await db.transaction('rw', [

@@ -9,6 +9,17 @@ interface DialogProps {
 }
 
 const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
+  React.useEffect(() => {
+    if (!open) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onOpenChange?.(false)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open, onOpenChange])
+
   if (!open) return null
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -21,6 +32,8 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
     >
       <div
         className="fixed inset-0 bg-background/80 backdrop-blur-sm"

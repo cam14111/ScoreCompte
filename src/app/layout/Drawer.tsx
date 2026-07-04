@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Home, Trophy, Users, FileText, Download, Cloud, X } from 'lucide-react'
+import { Home, Trophy, Users, FileText, Download, Cloud, X, Sun, Moon, MonitorSmartphone } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { Button } from '@/components/ui/Button'
+import { settingsStore, type ThemePreference } from '@/state/settingsStore'
 import packageJson from '../../../package.json'
 
 interface DrawerProps {
@@ -9,7 +11,20 @@ interface DrawerProps {
   onOpenChange: (open: boolean) => void
 }
 
+const THEME_OPTIONS: Array<{ value: ThemePreference; label: string; icon: typeof Sun }> = [
+  { value: 'system', label: 'Système', icon: MonitorSmartphone },
+  { value: 'light', label: 'Clair', icon: Sun },
+  { value: 'dark', label: 'Sombre', icon: Moon },
+]
+
 export function Drawer({ open, onOpenChange }: DrawerProps) {
+  const [theme, setTheme] = useState<ThemePreference>(() => settingsStore.getTheme())
+
+  const handleThemeChange = (value: ThemePreference) => {
+    settingsStore.setTheme(value)
+    setTheme(value)
+  }
+
   const menuItems = [
     { icon: Home, label: 'Accueil', to: '/' },
     { icon: Trophy, label: 'Parties', to: '/games' },
@@ -45,6 +60,7 @@ export function Drawer({ open, onOpenChange }: DrawerProps) {
               size="icon"
               onClick={() => onOpenChange(false)}
               className="touch-manipulation"
+              aria-label="Fermer le menu"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -75,7 +91,31 @@ export function Drawer({ open, onOpenChange }: DrawerProps) {
           </nav>
 
           {/* Footer */}
-          <div className="border-t p-4 safe-bottom">
+          <div className="border-t p-4 safe-bottom space-y-3">
+            {/* Sélecteur de thème */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Thème</p>
+              <div className="grid grid-cols-3 gap-1 rounded-lg bg-muted p-1" role="radiogroup" aria-label="Thème de l'application">
+                {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={theme === value}
+                    onClick={() => handleThemeChange(value)}
+                    className={cn(
+                      'flex flex-col items-center gap-1 rounded-md px-2 py-2 text-xs font-medium transition-colors touch-manipulation no-tap-highlight',
+                      theme === value
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-xs text-muted-foreground text-center">
               Score Counter v{packageJson.version}
             </p>

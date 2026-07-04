@@ -53,7 +53,17 @@ export function GameDetailPage() {
         turns
       })
 
-      // Check end conditions
+      // Check end conditions — uniquement si le dernier tour est complet.
+      // Si l'utilisateur a choisi "Continuer et ignorer", un tour vide a été créé :
+      // on ne redemande pas tant qu'il n'a pas fini un nouveau tour.
+      const lastTurn = turns[turns.length - 1]
+      if (lastTurn) {
+        const lastTurnScores = await gamesRepository.getTurnScores(lastTurn.id)
+        const filledIds = new Set(lastTurnScores.map(s => s.playerId))
+        const lastTurnComplete = players.every(p => filledIds.has(p.playerId))
+        if (!lastTurnComplete) return
+      }
+
       const endCheck = await gamesRepository.checkEndConditions(gameId)
       if (endCheck.shouldEnd) {
         if (endCheck.reason === 'score_limit') {
@@ -105,7 +115,7 @@ export function GameDetailPage() {
 
         // If all scores are entered, create the next turn
         if (allScoresEntered) {
-          await gamesRepository.createTurn(gameId, turns.length)
+          await gamesRepository.createNextTurn(gameId)
           setRefreshKey(k => k + 1)
         }
       }
@@ -143,7 +153,7 @@ export function GameDetailPage() {
   const { game: currentGame } = gameData
 
   return (
-    <div className="h-dvh flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background">
       {/* Header - Masqué pendant l'édition pour maximiser l'espace */}
       {!isEditingScore && (
         <div className="border-b bg-card shadow-sm safe-top">

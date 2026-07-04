@@ -114,6 +114,16 @@ export const gamesRepository = {
       .sortBy('turnIndex')
   },
 
+  // Crée le tour suivant avec un index strictement supérieur aux tours existants
+  // (turns.length seul produirait des doublons d'index après une suppression de tour)
+  async createNextTurn(gameId: string): Promise<Turn> {
+    const turns = await this.getTurns(gameId)
+    const nextIndex = turns.length > 0
+      ? Math.max(...turns.map(t => t.turnIndex)) + 1
+      : 0
+    return this.createTurn(gameId, nextIndex)
+  },
+
   async createTurn(gameId: string, turnIndex: number, currentPlayerId?: string): Promise<Turn> {
     const turn: Turn = {
       id: generateId(),
@@ -184,12 +194,16 @@ export const gamesRepository = {
   async calculateTotals(gameId: string): Promise<Record<string, number>> {
     const turns = await this.getTurns(gameId)
     const totals: Record<string, number> = {}
+    if (turns.length === 0) return totals
 
-    for (const turn of turns) {
-      const scores = await this.getTurnScores(turn.id)
-      for (const score of scores) {
-        totals[score.playerId] = (totals[score.playerId] || 0) + score.points
-      }
+    const scores = await db.turnScores
+      .where('turnId')
+      .anyOf(turns.map(t => t.id))
+      .filter(ts => !ts.deletedAt)
+      .toArray()
+
+    for (const score of scores) {
+      totals[score.playerId] = (totals[score.playerId] || 0) + score.points
     }
 
     return totals

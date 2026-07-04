@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn'
 import { getContrastColor } from '@/lib/colors'
-import * as Icons from 'lucide-react'
+import { getAvatarIcon } from '@/lib/avatarIcons'
 
 interface PlayerAvatarProps {
   type: 'initial' | 'icon' | 'image'
@@ -51,11 +51,7 @@ export function PlayerAvatar({
   }
 
   if (type === 'icon') {
-    const IconComponent = Icons[
-      value.split('-').map(
-        (part) => part.charAt(0).toUpperCase() + part.slice(1)
-      ).join('') as keyof typeof Icons
-    ] as any
+    const IconComponent = getAvatarIcon(value)
 
     return (
       <div

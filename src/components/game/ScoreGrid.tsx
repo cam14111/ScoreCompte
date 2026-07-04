@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { gamesRepository } from '@/data/repositories/gamesRepository'
 import { PlayerAvatar } from '@/components/players/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
@@ -39,16 +39,12 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
   // Ref pour gérer la transition tactile entre cellules
   const nextCellToEditRef = useRef<{ turnId: string; playerId: string; value?: number } | null>(null)
 
-  useEffect(() => {
-    loadGameData()
-  }, [gameId])
-
   // Notifier le parent quand l'édition commence/termine
   useEffect(() => {
     onEditingChange?.(editingCell !== null)
   }, [editingCell, onEditingChange])
 
-  const loadGameData = async () => {
+  const loadGameData = useCallback(async () => {
     const game = await gamesRepository.getById(gameId)
     if (!game) return
 
@@ -61,7 +57,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
 
     // Créer automatiquement le premier tour si aucun tour n'existe
     if (gameTurns.length === 0) {
-      await gamesRepository.createTurn(gameId, 0)
+      await gamesRepository.createNextTurn(gameId)
       gameTurns = await gamesRepository.getTurns(gameId)
     }
 
@@ -79,7 +75,11 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
 
     const totalsMap = await gamesRepository.calculateTotals(gameId)
     setTotals(totalsMap)
-  }
+  }, [gameId])
+
+  useEffect(() => {
+    loadGameData()
+  }, [loadGameData])
 
   const handleCellClick = (turnId: string, playerId: string, currentValue?: number) => {
     // Si une cellule est déjà en édition, stocker la prochaine pour le blur
@@ -179,8 +179,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
       }
 
       // Sinon, créer le tour suivant
-      const nextTurnIndex = turns.length
-      const newTurn = await gamesRepository.createTurn(gameId, nextTurnIndex)
+      const newTurn = await gamesRepository.createNextTurn(gameId)
       nextTurnId = newTurn.id
       nextPlayerId = players[0].playerId
       nextValue = undefined
@@ -348,6 +347,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                           <div className="flex items-center">
                             <button
                               type="button"
+                              aria-label="Inverser le signe du score"
                               className="p-1 h-full flex items-center justify-center hover:bg-primary/10 active:bg-primary/20 rounded-l transition-colors"
                               onMouseDown={(e) => {
                                 e.preventDefault() // Empêche le blur de l'input
@@ -372,7 +372,9 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                               }}
                               onBlur={handleBlur}
                               onKeyDown={handleKeyPress}
+                              onFocus={(e) => e.target.select()}
                               autoFocus
+                              aria-label="Score"
                             />
                           </div>
                         ) : (
@@ -389,6 +391,7 @@ export function ScoreGrid({ gameId, onTurnComplete, onEditingChange, onBack, onF
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => handleDeleteTurn(turn.id)}
+                      aria-label={`Supprimer le tour ${index + 1}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

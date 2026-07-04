@@ -17,6 +17,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     if (location.pathname.startsWith('/games/')) return 'Partie en cours'
     if (location.pathname === '/players') return 'Joueurs'
     if (location.pathname.startsWith('/players/new')) return 'Nouveau joueur'
+    if (location.pathname.startsWith('/players/') && location.pathname.endsWith('/stats')) return 'Statistiques'
     if (location.pathname.startsWith('/players/')) return 'Modifier joueur'
     if (location.pathname === '/models') return 'Modèles de jeux'
     if (location.pathname.startsWith('/models/new')) return 'Nouveau modèle'
