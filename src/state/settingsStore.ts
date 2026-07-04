@@ -1,18 +1,18 @@
 export type ThemePreference = 'system' | 'light' | 'dark'
 
+// NB : la clé et la logique de résolution sont dupliquées dans le script
+// inline anti-flash de index.html — garder les deux synchronisés.
 const THEME_KEY = 'app_theme'
 
 // Couleur de la barre système (PWA) pour chaque thème résolu
+// (le "dark" doit correspondre au <meta name="theme-color"> de index.html)
 const THEME_COLORS: Record<'light' | 'dark', string> = {
   dark: '#1e293b',
   light: '#f8fafc',
 }
 
-type Listener = (theme: ThemePreference) => void
-
 class SettingsStore {
   private theme: ThemePreference = 'dark'
-  private listeners: Listener[] = []
   private mediaQuery: MediaQueryList | null = null
 
   getTheme(): ThemePreference {
@@ -27,19 +27,11 @@ class SettingsStore {
       // Stockage indisponible (mode privé) : le thème reste appliqué pour la session
     }
     this.applyTheme()
-    this.listeners.forEach(l => l(theme))
-  }
-
-  subscribe(listener: Listener): () => void {
-    this.listeners.push(listener)
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener)
-    }
   }
 
   private resolveTheme(): 'light' | 'dark' {
     if (this.theme === 'system') {
-      return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+      return window.matchMedia?.('(prefers-color-scheme: light)')?.matches ? 'light' : 'dark'
     }
     return this.theme
   }

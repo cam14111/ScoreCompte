@@ -14,6 +14,10 @@
             ? t
             : (t === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
           document.documentElement.setAttribute('data-theme', resolved);
+          if (resolved === 'light') {
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#f8fafc');
+          }
         } catch (e) {}
       })();
     </script>

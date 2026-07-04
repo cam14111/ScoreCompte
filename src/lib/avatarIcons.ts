@@ -57,10 +57,15 @@ export const AVATAR_ICON_MAP: Record<string, LucideIcon> = {
   'squirrel': Squirrel,
 }
 
+// Anciens noms stockés dans des données existantes, absents de la liste actuelle
+const LEGACY_ICON_ALIASES: Record<string, LucideIcon> = {
+  'chess-knight': Dices,
+}
+
 export const AVATAR_ICONS = Object.keys(AVATAR_ICON_MAP)
 
 export type AvatarIconName = keyof typeof AVATAR_ICON_MAP
 
 export function getAvatarIcon(name: string): LucideIcon | undefined {
-  return AVATAR_ICON_MAP[name]
+  return AVATAR_ICON_MAP[name] ?? LEGACY_ICON_ALIASES[name]
 }

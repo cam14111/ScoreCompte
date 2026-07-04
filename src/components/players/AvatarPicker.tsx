@@ -36,7 +36,10 @@ async function resizeImageToDataUrl(file: File): Promise<string> {
   const context = canvas.getContext('2d')
   if (!context) return dataUrl
   context.drawImage(img, 0, 0, width, height)
-  return canvas.toDataURL('image/jpeg', 0.85)
+  // PNG conserve la transparence ; JPEG (plus compact) pour le reste
+  return file.type === 'image/png'
+    ? canvas.toDataURL('image/png')
+    : canvas.toDataURL('image/jpeg', 0.85)
 }
 
 interface AvatarPickerProps {

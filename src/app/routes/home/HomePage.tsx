@@ -20,12 +20,15 @@ export function HomePage() {
   useEffect(() => {
     if (!games) return
 
+    let cancelled = false
     const load = async () => {
       const current = games.filter(g => g.status === 'IN_PROGRESS').slice(0, 3)
       const withData = await Promise.all(
         current.map(async (game) => {
-          const gamePlayers = await gamesRepository.getGamePlayers(game.id)
-          const turns = await gamesRepository.getTurns(game.id)
+          const [gamePlayers, turns] = await Promise.all([
+            gamesRepository.getGamePlayers(game.id),
+            gamesRepository.getTurns(game.id)
+          ])
           return {
             game,
             players: gamePlayers.map(gp => gp.player),
@@ -33,10 +36,11 @@ export function HomePage() {
           }
         })
       )
-      setInProgress(withData)
+      if (!cancelled) setInProgress(withData)
     }
 
     load()
+    return () => { cancelled = true }
   }, [games])
 
   return (
