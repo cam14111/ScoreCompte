@@ -17,19 +17,18 @@ export function PlayerStatsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const loadPlayerAndStats = async () => {
+      setLoading(true)
+      const playerData = await playersRepository.getById(playerId)
+      if (playerData) {
+        setPlayer(playerData)
+        const statsData = await playersRepository.getAdvancedStats(playerId)
+        setStats(statsData)
+      }
+      setLoading(false)
+    }
     loadPlayerAndStats()
   }, [playerId])
-
-  const loadPlayerAndStats = async () => {
-    setLoading(true)
-    const playerData = await playersRepository.getById(playerId)
-    if (playerData) {
-      setPlayer(playerData)
-      const statsData = await playersRepository.getAdvancedStats(playerId)
-      setStats(statsData)
-    }
-    setLoading(false)
-  }
 
   if (loading) {
     return (

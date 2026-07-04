@@ -105,6 +105,7 @@ export function ModelsListPage() {
                           variant="ghost"
                           className="h-8 w-8"
                           onClick={(e) => handleToggleVisibility(e, model.id, model.isHidden || false)}
+                          aria-label={model.isHidden ? `Afficher ${model.name}` : `Masquer ${model.name}`}
                         >
                           {model.isHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                         </Button>

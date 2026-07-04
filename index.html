@@ -3,8 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#1e293b" />
+    <!-- Applique le thème sauvegardé avant le premier rendu (évite le flash) -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('app_theme');
+          var resolved = t === 'light' || t === 'dark'
+            ? t
+            : (t === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.setAttribute('data-theme', resolved);
+          if (resolved === 'light') {
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', '#f8fafc');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <meta name="description" content="Score tracking app for board games - offline-first PWA" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Score Counter</title>

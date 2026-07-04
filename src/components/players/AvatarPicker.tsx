@@ -1,10 +1,46 @@
 import { useState, useRef } from 'react'
-import { AVATAR_ICONS } from '@/lib/avatarIcons'
+import { AVATAR_ICONS, getAvatarIcon } from '@/lib/avatarIcons'
 import { cn } from '@/lib/cn'
-import * as Icons from 'lucide-react'
 import { Label } from '@/components/ui/Label'
 import { Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useAlertDialog } from '@/contexts/AlertContext'
+
+// Redimensionne l'image en 256×256 max : réduit fortement la taille stockée
+// en base (et donc celle des exports/backups Google Drive)
+const AVATAR_MAX_DIMENSION = 256
+const AVATAR_MAX_INPUT_SIZE = 8 * 1024 * 1024 // 8 Mo avant compression
+
+async function resizeImageToDataUrl(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error('Lecture du fichier impossible'))
+    reader.readAsDataURL(file)
+  })
+
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('Image invalide'))
+    image.src = dataUrl
+  })
+
+  const scale = Math.min(1, AVATAR_MAX_DIMENSION / Math.max(img.width, img.height))
+  const width = Math.max(1, Math.round(img.width * scale))
+  const height = Math.max(1, Math.round(img.height * scale))
+
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+  if (!context) return dataUrl
+  context.drawImage(img, 0, 0, width, height)
+  // PNG conserve la transparence ; JPEG (plus compact) pour le reste
+  return file.type === 'image/png'
+    ? canvas.toDataURL('image/png')
+    : canvas.toDataURL('image/jpeg', 0.85)
+}
 
 interface AvatarPickerProps {
   type: 'initial' | 'icon' | 'image'
@@ -23,6 +59,7 @@ export function AvatarPicker({
 }: AvatarPickerProps) {
   const [selectedTab, setSelectedTab] = useState<'initial' | 'icon' | 'image'>(type)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { showAlert } = useAlertDialog()
 
   const handleTabChange = (newTab: 'initial' | 'icon' | 'image') => {
     setSelectedTab(newTab)
@@ -36,26 +73,23 @@ export function AvatarPicker({
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Check file size (max 500KB)
-    if (file.size > 500 * 1024) {
-      alert('L\'image est trop grande. Maximum 500 KB.')
-      return
-    }
-
-    // Check file type
     if (!file.type.startsWith('image/')) {
-      alert('Veuillez sélectionner une image.')
+      showAlert({ title: 'Fichier invalide', message: 'Veuillez sélectionner une image.', type: 'error' })
       return
     }
 
-    // Convert to base64
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string
-      onTypeChange('image')
-      onValueChange(base64)
+    if (file.size > AVATAR_MAX_INPUT_SIZE) {
+      showAlert({ title: 'Image trop grande', message: 'L\'image dépasse 8 Mo. Choisissez une image plus légère.', type: 'error' })
+      return
     }
-    reader.readAsDataURL(file)
+
+    try {
+      const resized = await resizeImageToDataUrl(file)
+      onTypeChange('image')
+      onValueChange(resized)
+    } catch {
+      showAlert({ title: 'Erreur', message: 'Impossible de lire cette image.', type: 'error' })
+    }
   }
 
   const handleRemoveImage = () => {
@@ -124,17 +158,15 @@ export function AvatarPicker({
       {selectedTab === 'icon' && (
         <div className="grid grid-cols-5 gap-2">
           {AVATAR_ICONS.map((iconName) => {
-            const IconComponent = Icons[iconName.split('-').map(
-              (part, i) => i === 0 ? part.charAt(0).toUpperCase() + part.slice(1) :
-              part.charAt(0).toUpperCase() + part.slice(1)
-            ).join('') as keyof typeof Icons] as any
-
+            const IconComponent = getAvatarIcon(iconName)
             if (!IconComponent) return null
 
             return (
               <button
                 key={iconName}
                 type="button"
+                aria-label={`Icône ${iconName}`}
+                aria-pressed={value === iconName && type === 'icon'}
                 className={cn(
                   'h-12 w-12 rounded-lg border-2 flex items-center justify-center transition-all touch-manipulation',
                   value === iconName && type === 'icon'
@@ -168,6 +200,7 @@ export function AvatarPicker({
                 size="icon"
                 className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
                 onClick={handleRemoveImage}
+                aria-label="Supprimer l'image"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -178,7 +211,7 @@ export function AvatarPicker({
               <div className="text-center">
                 <p className="text-sm font-medium">Télécharger une image</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  PNG, JPG jusqu'à 500 KB
+                  PNG, JPG… (redimensionnée automatiquement)
                 </p>
               </div>
               <input

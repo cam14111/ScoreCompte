@@ -2,13 +2,27 @@
 
 Application web progressive (PWA) mobile-first pour le comptage de scores de jeux de société. Fonctionne 100% hors-ligne avec stockage local sécurisé.
 
-![Version](https://img.shields.io/badge/version-2.3.0-blue)
+![Version](https://img.shields.io/badge/version-2.6.0-blue)
 ![PWA](https://img.shields.io/badge/PWA-ready-green)
 ![Offline](https://img.shields.io/badge/offline-100%25-brightgreen)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-success)
 ![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 
 ## 🆕 Nouveautés Version 2.x
+
+### Revue complète & améliorations (2.6.0) 🚀
+- **Mobile** : les boutons « Retour / Terminer » de la grille de scores sont de nouveau visibles sans scroller
+- **Thème Système / Clair / Sombre** : sélecteur dans le menu, persistant, appliqué avant le premier rendu (sans flash)
+- **Accueil repensé** : reprise en un geste des parties en cours + accès rapide « Nouvelle partie »
+- **Performance** : bundle d'icônes réduit de ~488 KB (imports lucide-react tree-shakeables) ; totaux calculés en 2 requêtes
+- **Fiabilité** :
+  - validation structurelle des imports JSON et des restaurations Google Drive avant toute écriture
+  - le dialogue de fin de partie ne réapparaît plus en boucle après « Continuer et ignorer »
+  - index de tour unique après suppression d'un tour
+  - échappement correct des guillemets dans l'export CSV
+- **Avatars image** : redimensionnement automatique à 256 px (PNG transparent préservé), plus de limite bloquante de 500 KB
+- **Accessibilité** : libellés ARIA sur les boutons icônes, dialogues avec `role="dialog"` + fermeture Escape, zoom pince réactivé
+- **Qualité** : ESLint 9 opérationnel (0 erreur), corrections de hooks React
 
 ### Gestion des mises à jour (2.3.0) 🔄
 - **Détection intelligente des mises à jour** :
@@ -423,8 +437,8 @@ Projet créé pour l'utilisateur. Tous droits réservés.
 
 ---
 
-**Version actuelle** : 2.3.0
-**Dernière mise à jour** : 26 janvier 2026
+**Version actuelle** : 2.6.0
+**Dernière mise à jour** : 4 juillet 2026
 **Status** : ✅ Production Ready (Feature Complete)
 **Déploiement** : GitHub Pages
 **Stockage** : Local (IndexedDB) + Cloud (Google Drive)

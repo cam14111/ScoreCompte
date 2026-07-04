@@ -182,8 +182,13 @@ export function GameCreatePage() {
             <Input
               id="scoreLimit"
               type="number"
+              min={1}
+              inputMode="numeric"
               value={scoreLimit || ''}
-              onChange={(e) => setScoreLimit(e.target.value ? parseInt(e.target.value) : undefined)}
+              onChange={(e) => {
+                const v = parseInt(e.target.value)
+                setScoreLimit(Number.isFinite(v) && v > 0 ? v : undefined)
+              }}
               placeholder="Illimité"
             />
           </div>
@@ -192,8 +197,13 @@ export function GameCreatePage() {
             <Input
               id="turnLimit"
               type="number"
+              min={1}
+              inputMode="numeric"
               value={turnLimit || ''}
-              onChange={(e) => setTurnLimit(e.target.value ? parseInt(e.target.value) : undefined)}
+              onChange={(e) => {
+                const v = parseInt(e.target.value)
+                setTurnLimit(Number.isFinite(v) && v > 0 ? v : undefined)
+              }}
               placeholder="Illimité"
             />
           </div>

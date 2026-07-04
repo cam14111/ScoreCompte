@@ -23,12 +23,13 @@ export function useDialog() {
     setState({ isOpen: false })
   }, [])
 
+  const onConfirm = state.onConfirm
   const handleConfirm = useCallback(async () => {
-    if (state.onConfirm) {
-      await state.onConfirm()
+    if (onConfirm) {
+      await onConfirm()
     }
     closeDialog()
-  }, [state.onConfirm, closeDialog])
+  }, [onConfirm, closeDialog])
 
   return {
     isOpen: state.isOpen,

@@ -4,7 +4,7 @@
  */
 
 import { db } from '@/data/db';
-import { exportToJSON, type ExportData } from '@/lib/exportImport';
+import { exportToJSON, validateImportData, type ExportData } from '@/lib/exportImport';
 import { googleAuthService } from './GoogleAuthService';
 import { googleDriveService } from './GoogleDriveService';
 import { backupRepository } from './BackupRepository';
@@ -485,10 +485,15 @@ export class BackupManager {
       // Extraire les données
       const data = await extractBackup(blob);
 
-      // Valider le schéma si demandé
-      if (options.validateSchema && data.players) {
-        // Simplification : on assume que si data.players existe, le schéma est valide
-        // Dans une version plus complète, on vérifierait la structure complète
+      // Valider le schéma avant toute écriture en base
+      if (options.validateSchema) {
+        const validation = validateImportData(data);
+        if (!validation.valid) {
+          throw new BackupError(
+            BackupErrorCode.INVALID_BACKUP,
+            validation.error || 'Le backup contient des données invalides.'
+          );
+        }
       }
 
       // Importer les données

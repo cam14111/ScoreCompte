@@ -183,6 +183,7 @@ export function PlayerEditPage() {
             variant="destructive"
             size="icon"
             onClick={handleDeleteClick}
+            aria-label="Supprimer le joueur"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
